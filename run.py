@@ -1,6 +1,7 @@
 import os
 from candfans.client import CandFansClient
 
+
 def main():
     client = CandFansClient(
         email=os.getenv('CANDFANS_EMAIL'),

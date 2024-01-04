@@ -9,10 +9,10 @@ class CandFansException(Exception):
 
 
 class CandFansClient:
-    def __init__(self, email: str, password: str, base_url: str = None, debug: bool = False) -> None:
+    def __init__(self, email: str, password: str, base_url: str = 'https://candfans.jp', debug: bool = False) -> None:
         self._email = email
         self._password = password
-        self._base_url = base_url or 'https://candfans.jp'
+        self._base_url = base_url
         self._xsrf_token = None
         if debug:
             import logging
@@ -32,45 +32,32 @@ class CandFansClient:
         return self._base_url
 
     @property
-    def get_header(self):
-        return {
+    def header(self):
+        base = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
             'Origin': 'https://r18.candfans.jp',
             'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36'
         }
+        if self._xsrf_token:
+            base['X-Xsrf-Token'] = self._xsrf_token
+        return base
 
-    @property
-    def post_header(self):
-        return {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'X-Xsrf-Token': self._xsrf_token,
-            'Origin': 'https://r18.candfans.jp',
-            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36'
-        }
-
-    def login(self):
-        # get XSRF-TOKEN
-        self._session.get(f'{self.base_url}/auth/login')
+    def login(self) -> bool:
         cookies = self._get_csrf_cookies()
         self._xsrf_token = unquote(cookies['XSRF-TOKEN'])
-        print('XSRF-TOKEN', self._xsrf_token)
-        print('secure_candfans_session', cookies['secure_candfans_session'])
-        res = self._session.post(
-            f'{self.base_url}/api/auth/login',
-            json={
-                'id': self._email,
-                'password': self._password
-            },
-            headers=self.post_header,
-        )
-        res_json = res.json()
-        if 'status' not in res_json:
-            print(res_json)
-            raise CandFansException('unknown')
-        if res_json['status'] != 'SUCCESS':
-            raise CandFansException(f'failed to login [{res_json["message"]}]')
+        try:
+            res = self._post(
+                'api/auth/login',
+                json={
+                    'id': self._email,
+                    'password': self._password
+                },
+                headers=self.header,
+            )
+            return True
+        except CandFansException as e:
+            raise e
 
     def get_sales_history(self, month_yyyy_mm: str):
         """
@@ -114,25 +101,43 @@ class CandFansClient:
         histories = []
         page = 1
         while len(histories) == 0:
-            res = self._session.get(
-                f'{self._base_url}/api/orders/get-sales-history?month={month_yyyy_mm}&page={page}'
-            )
-            res_json = res.json()
-            if 'status' not in res_json:
-                print(res_json)
-                raise CandFansException('unknown')
-
-            if res_json['status'] != 'SUCCESS':
+            try:
+                res_json = self._get(
+                    f'api/orders/get-sales-history?month={month_yyyy_mm}&page={page}',
+                    headers=self.header
+                )
+            except CandFansException as e:
                 raise CandFansException(
-                    f'failed get sales history[{res_json["message"]}] for month {month_yyyy_mm} page {page}'
+                    f'failed get sales history for month {month_yyyy_mm} page {page} [{e}]'
                 )
             histories = histories + res_json['data']
             # 1ページ目が空ということはその月に売上はない
             if page == 1 and len(histories) == 0:
                 break
+            time.sleep(0.5)
         return histories
 
     def _get_csrf_cookies(self):
         res = self._session.get(f'{self._base_url}/api/sanctum/csrf-cookie')
         cookies = res.cookies
         return cookies
+
+    def _post(self, path: str, *arg, **kwargs):
+        return self._request('POST', path, *arg, **kwargs)
+
+    def _get(self, path: str, *arg, **kwargs):
+        return self._request('GET', path, *arg, **kwargs)
+
+    def _request(self, method: str, path: str, *arg, **kwargs):
+        url = f'{self.base_url}/{path}'
+        response = self._session.request(method, url, *arg, **kwargs)
+        response_json = response.json()
+        if 'status' not in response_json:
+            print(response_json)
+            raise CandFansException('unknown error')
+
+        if response_json['status'] != 'SUCCESS':
+            raise CandFansException(
+                f'failed {method} for {path} message [{response_json["message"]}]'
+            )
+        return response_json
