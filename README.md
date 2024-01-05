@@ -7,7 +7,7 @@ unofficial API Client for candfans
 初期化時にログインを行います。
 
 ```python
-from candfans.client import CandFansClient
+from candfans_client.client import CandFansClient
 
 client = CandFansClient(
     email='YOUR_EMAIL',

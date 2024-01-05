@@ -1,5 +1,5 @@
 import os
-from candfans.client import CandFansClient
+from candfans_client.client import CandFansClient
 
 
 def main():
