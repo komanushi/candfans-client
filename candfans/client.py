@@ -4,6 +4,15 @@ from urllib.parse import unquote
 
 import requests
 
+from .model import (
+    Sales,
+    SalesHistory,
+    SalesPurchasePost,
+    SalesSubscribe,
+    SalesChip,
+    SalesBacknumber
+)
+
 
 class CandFansException(Exception):
     """ Exception raised when Candfans API """
@@ -60,43 +69,9 @@ class CandFansClient:
         except CandFansException as e:
             raise e
 
-    def get_sales_history(self, month_yyyy_mm: str) -> List[dict]:
+    def get_sales_history(self, month_yyyy_mm: str) -> List[SalesHistory]:
         """
         https://candfans.jp/api/orders/get-sales-history?month=2023-12&page=1
-        {
-          "status": "SUCCESS",
-          "message": "売上履歴を取得しました。",
-          "data": [
-            {
-              "orders_id": 1111,
-              "orders_type": 6,
-              "sales_date": "2023-11-29 23:44:41",
-              "user_id": 111111,
-              "user_code": "XXXXXXX",
-              "username": "koma",
-              "profile_img": "/images/response/no-profile-img.png",
-              "subscribe_amount": 9999,
-              "purchase_post_amount": 0,
-              "user_chip_amount": 0,
-              "post_chip_amount": 0,
-              "message_chip_amount": 0,
-              "message_amount": 0,
-              "backnumber_amount": 0,
-              "streaming_amount": 0,
-              "subscribe_affiliate_amount": 0,
-              "purchase_post_affiliate_amount": 0,
-              "affiliate_amount": 0,
-              "plan_id": 99999,
-              "plan_name": "プランネーム",
-              "support_price": 9999,
-              "post_id": 0,
-              "thread_message_id": 0,
-              "purchase_post_id": 0,
-              "backnumber_id": 0,
-              "backnumber_month": "",
-              "backnumber_plan_name": ""
-            },
-        }
         :return:
         """
         histories = []
@@ -116,55 +91,21 @@ class CandFansClient:
             if page == 1 and len(histories) == 0:
                 break
             time.sleep(0.5)
-        return histories
+        return [SalesHistory(**h) for h in histories]
 
-    def get_sales(self, month_yyyy_mm: str):
-        """
-        {
-            "status": "SUCCESS",
-            "message": "売上情報を取得しました。",
-            "data": [
-                {
-                    "chip_user_cnt": 0,
-                    "chip_user_sum": 0,
-                    "chip_post_cnt": 0,
-                    "chip_post_sum": 0,
-                    "chip_message_cnt": 0,
-                    "chip_message_sum": 0,
-                    "message_cnt": 0,
-                    "message_sum": 0,
-                    "backnumber_cnt": 0,
-                    "backnumber_sum": 0,
-                    "streaming_cnt": 0,
-                    "streaming_sum": 0,
-                    "purchase_cnt": 10,
-                    "purchase_sum": 9999,
-                    "purchase_affi_cnt": 0,
-                    "purchase_affi_sum": 0,
-                    "subscribe_cnt": 10,
-                    "subscribe_sum": 9999,
-                    "subscribe_affi_cnt": 0,
-                    "subscribe_affi_sum": 0,
-                    "affiliate_cnt": 0,
-                    "affiliate_sum": 0,
-                    "affiliate_referrer_cnt": 0,
-                    "affiliate_referrer_sum": 0
-                }
-            ]
-        }
-        """
+    def get_sales(self, month_yyyy_mm: str) -> List[Sales]:
         try:
             res_json = self._get(
                 f'api/orders/get-sales?month={month_yyyy_mm}',
                 headers=self.header
             )
-            return res_json['data']
+            return [Sales(**s) for s in res_json['data']]
         except CandFansException as e:
             raise CandFansException(
                 f'failed get sales for month {month_yyyy_mm}[{e}]'
             )
 
-    def get_sales_purchase_post(self, month_yyyy_mm: str):
+    def get_sales_purchase_post(self, month_yyyy_mm: str) -> SalesPurchasePost:
         """
         {
           "status": "SUCCESS",
@@ -179,6 +120,13 @@ class CandFansClient:
                 "sum_price": 400,
                 "sum_cnt": 4
               },
+              {
+                "content": "単品商品名",
+                "post_id": 2,
+                "created_at": "2023-12-29T00:00:00.000000Z",
+                "sum_price": 600,
+                "sum_cnt": 1
+              },
             ]
           }
         }
@@ -188,7 +136,7 @@ class CandFansClient:
                 f'api/orders/get-sales-purchasepost?month={month_yyyy_mm}',
                 headers=self.header
             )
-            return res_json['data']
+            return SalesPurchasePost(**res_json['data'])
         except CandFansException as e:
             raise CandFansException(
                 f'failed get sales for month {month_yyyy_mm}[{e}]'
@@ -222,13 +170,13 @@ class CandFansClient:
                 f'api/orders/get-sales-subscribe?month={month_yyyy_mm}',
                 headers=self.header
             )
-            return res_json['data']
+            return SalesSubscribe(**res_json['data'])
         except CandFansException as e:
             raise CandFansException(
                 f'failed get sales for month {month_yyyy_mm}[{e}]'
             )
 
-    def get_sales_chip(self, month_yyyy_mm: str):
+    def get_sales_chip(self, month_yyyy_mm: str) -> SalesChip:
         """
         {
           "status": "SUCCESS",
@@ -251,13 +199,13 @@ class CandFansClient:
                 f'api/orders/get-sales-chip?month={month_yyyy_mm}',
                 headers=self.header
             )
-            return res_json['data']
+            return SalesChip(**res_json['data'])
         except CandFansException as e:
             raise CandFansException(
                 f'failed get sales for month {month_yyyy_mm}[{e}]'
             )
 
-    def get_sales_backnumber(self, month_yyyy_mm: str):
+    def get_sales_backnumber(self, month_yyyy_mm: str) -> SalesBacknumber:
         """
         {
           "status": "SUCCESS",
@@ -281,7 +229,7 @@ class CandFansClient:
                 f'api/orders/get-sales-backnumber?month={month_yyyy_mm}',
                 headers=self.header
             )
-            return res_json['data']
+            return SalesBacknumber(**res_json['data'])
         except CandFansException as e:
             raise CandFansException(
                 f'failed get sales for month {month_yyyy_mm}[{e}]'
