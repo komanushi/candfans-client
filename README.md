@@ -1,5 +1,19 @@
 # candfans-client
-unofficial API Client for candfans
+非公式のCandfansのAPI Clientです。なんの保証もありません。
+
+# install
+https://pypi.org/project/candfans-client/
+
+## pip
+```bash
+pip install candfans-client
+```
+
+## poetry
+
+```bash
+poetry add candfans-client
+```
 
 # example
 
