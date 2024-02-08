@@ -69,3 +69,29 @@ class TestClient(TestCase):
         self.assertEqual(len(backnumber.sales), 1)
         self.assertEqual(backnumber.total_price, 2800)
         self.assertEqual(backnumber.sales[0].sum_price, 2800)
+
+    def test_follows(self, *args):
+
+        client = CandFansClient(
+            email='test@test.com',
+            password='password'
+        )
+        follows = client.get_follows(999)
+        self.assertEqual(len(follows), 2)
+        self.assertTrue(follows[0].is_follow)
+        self.assertTrue(follows[0].is_official_creator)
+        self.assertTrue(follows[1].is_follow)
+        self.assertFalse(follows[1].is_official_creator)
+
+    def test_followed(self, *args):
+
+        client = CandFansClient(
+            email='test@test.com',
+            password='password'
+        )
+        followed = client.get_followed(999)
+        self.assertEqual(len(followed), 2)
+        self.assertFalse(followed[0].is_follow)
+        self.assertFalse(followed[0].is_official_creator)
+        self.assertFalse(followed[1].is_follow)
+        self.assertFalse(followed[1].is_official_creator)

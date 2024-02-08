@@ -1,0 +1,26 @@
+{
+    "status": "SUCCESS",
+    "message": "フォロー情報を取得しました。",
+    "data": [
+        {
+            "user_id": 1,
+            "user_code": "user_code1",
+            "username": "username1",
+            "profile_img": "/user/1/profile/XXXX.png",
+            "is_follow": 1,
+            "is_official_creator": 1,
+            "is_on_air": false,
+            "live_url": ""
+        },
+        {
+            "user_id": 2,
+            "user_code": "user_code2",
+            "username": "username2",
+            "profile_img": "/user/2/profile/XXXXX.jpg",
+            "is_follow": 1,
+            "is_official_creator": 0,
+            "is_on_air": false,
+            "live_url": ""
+        }
+    ]
+}

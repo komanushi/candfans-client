@@ -1,4 +1,5 @@
 import os
+import json
 from candfans_client.client import CandFansClient
 
 
@@ -19,8 +20,12 @@ def main():
     # print(subscribe.total_price, len(subscribe.sales))
     # chip = client.get_sales_chip('2023-11')
     # print(chip.total_price, len(chip.sales))
-    backnumber = client.get_sales_backnumber('2024-01')
-    print(backnumber.total_price, len(backnumber.sales))
+    # backnumber = client.get_sales_backnumber('2024-01')
+    # print(backnumber.total_price, len(backnumber.sales))
+    # res = client.get_follows(1025744)
+    # print(len(res))
+    res = client.get_followed(1025744)
+    print(len(res))
 
 
 if __name__ == "__main__":

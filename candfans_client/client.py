@@ -7,13 +7,16 @@ from urllib.parse import unquote, quote_plus
 
 import requests
 
-from .model import (
+from candfans_client.models.sales import (
     Sales,
     SalesHistory,
     SalesPurchasePost,
     SalesSubscribe,
     SalesChip,
     SalesBacknumber
+)
+from candfans_client.models.user import (
+    User,
 )
 
 
@@ -80,7 +83,7 @@ class CandFansClient:
         """
         histories = []
         page = 1
-        while len(histories) == 0:
+        while True:
             try:
                 res_json = self._get(
                     f'api/orders/get-sales-history?month={month_yyyy_mm}&page={page}',
@@ -90,11 +93,12 @@ class CandFansClient:
                 raise CandFansException(
                     f'failed get sales history for month {month_yyyy_mm} page {page} [{e}]'
                 )
-            histories = histories + res_json['data']
-            # 1ページ目が空ということはその月に売上はない
-            if page == 1 and len(histories) == 0:
+            if len(res_json['data']) == 0:
                 break
+            histories += res_json['data']
             time.sleep(0.5)
+
+            page += 1
         return [SalesHistory(**h) for h in histories]
 
     def get_sales(self, month_yyyy_mm: str) -> List[Sales]:
@@ -239,6 +243,58 @@ class CandFansClient:
                 f'failed get sales for month {month_yyyy_mm}[{e}]'
             )
 
+    def get_follows(self, user_id: int) -> List[User]:
+        """
+        https://candfans.jp/api/user/get-follow/1?page=1
+        :return:
+        """
+        follows = []
+        page = 1
+        while True:
+            try:
+                res_json = self._get(
+                    f'api/user/get-follow/{user_id}?page={page}',
+                    headers=self.header
+                )
+            except CandFansException as e:
+                raise CandFansException(
+                    f'failed get follows of {user_id} page {page} [{e}]'
+                )
+            if len(res_json['data']) == 0:
+                break
+
+            follows += res_json['data']
+
+            time.sleep(0.5)
+            page += 1
+        return [User(**f) for f in follows]
+
+    def get_followed(self, user_id: int) -> List[User]:
+        """
+        https://candfans.jp/api/user/get-followed/1?page=1
+        :return:
+        """
+        followed = []
+        page = 1
+        while True:
+            try:
+                res_json = self._get(
+                    f'api/user/get-followed/{user_id}?page={page}',
+                    headers=self.header
+                )
+            except CandFansException as e:
+                raise CandFansException(
+                    f'failed get followed of {user_id} page {page} [{e}]'
+                )
+            if len(res_json['data']) == 0:
+                break
+            followed += res_json['data']
+
+            time.sleep(0.5)
+            page += 1
+        return [User(**f) for f in followed]
+
+
     def _get_csrf_cookies(self):
         url = f'{self._base_url}/api/sanctum/csrf-cookie'
         res = self._session.get(url)
@@ -263,6 +319,8 @@ class CandFansClient:
 
         if 'status' not in response_json:
             print(response_json)
+            if 'message' in response_json:
+                raise CandFansException(response_json['message'])
             raise CandFansException('unknown error')
 
         if response_json['status'] != 'SUCCESS':

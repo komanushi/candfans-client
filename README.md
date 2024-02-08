@@ -77,3 +77,11 @@ print(chip.total_price, len(chip.sales))
 backnumber = client.get_sales_backnumber('2023-11')
 print(backnumber.total_price, len(backnumber.sales))
 ```
+
+# contribution
+
+## test
+
+```
+poetry run python -m unittest discover -s tests/
+```
