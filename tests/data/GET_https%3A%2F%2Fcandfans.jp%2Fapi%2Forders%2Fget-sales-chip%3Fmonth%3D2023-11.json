@@ -1,0 +1,15 @@
+{
+    "status": "SUCCESS",
+    "message": "売上情報を取得しました。",
+    "data": {
+        "total_price": 1000,
+        "sales": [
+            {
+                "username": "chip_user",
+                "user_code": "chip_user_codee",
+                "sum_price": 1000,
+                "sum_cnt": 5
+            }
+        ]
+    }
+}

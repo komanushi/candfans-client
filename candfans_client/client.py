@@ -1,6 +1,9 @@
 import time
+import os
+import json
+
 from typing import List
-from urllib.parse import unquote
+from urllib.parse import unquote, quote_plus
 
 import requests
 
@@ -24,7 +27,8 @@ class CandFansClient:
         self._password = password
         self._base_url = base_url
         self._xsrf_token = None
-        if debug:
+        self.debug = debug
+        if self.debug:
             import logging
             import http.client as http_client
 
@@ -35,7 +39,7 @@ class CandFansClient:
             http_client.HTTPConnection.debuglevel = 1
 
         self._session = requests.Session()
-        self.login()
+        self.logged_in = self.login()
 
     @property
     def base_url(self):
@@ -236,7 +240,8 @@ class CandFansClient:
             )
 
     def _get_csrf_cookies(self):
-        res = self._session.get(f'{self._base_url}/api/sanctum/csrf-cookie')
+        url = f'{self._base_url}/api/sanctum/csrf-cookie'
+        res = self._session.get(url)
         cookies = res.cookies
         return cookies
 
@@ -250,6 +255,12 @@ class CandFansClient:
         url = f'{self.base_url}/{path}'
         response = self._session.request(method, url, *arg, **kwargs)
         response_json = response.json()
+
+        if self.debug:
+            os.makedirs('./debug', exist_ok=True)
+            with open(f'debug/{method}_{quote_plus(url)}.json', mode='w') as f:
+                f.write(json.dumps(response_json, indent=4, ensure_ascii=False))
+
         if 'status' not in response_json:
             print(response_json)
             raise CandFansException('unknown error')

@@ -171,7 +171,9 @@ class SubscribeSale(BaseModel):
     plan_id: int
     plan_name: str
     support_price: int
+    # 現在の登録者数を示すためその月に関係ない値が入る
     fans_cnt: int
+    # sum_cnt * support_price * (1 - 手数料比率)に原則なるがクーポンを使っている場合はその分減る
     sum_price: int
     sum_cnt: int
     continue_cnt: int

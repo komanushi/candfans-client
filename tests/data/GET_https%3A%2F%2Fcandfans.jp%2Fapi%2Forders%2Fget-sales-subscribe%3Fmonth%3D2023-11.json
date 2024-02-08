@@ -1,0 +1,31 @@
+{
+    "status": "SUCCESS",
+    "message": "売上情報を取得しました。",
+    "data": {
+        "total_price": 3000,
+        "sales": [
+            {
+                "plan_id": 1,
+                "plan_name": "有料プラン",
+                "support_price": 1500,
+                "fans_cnt": 4,
+                "sum_price": 3000,
+                "sum_cnt": 2,
+                "continue_cnt": 0,
+                "new_cnt": 2,
+                "withdraw_cnt": 5
+            },
+            {
+                "plan_id": 2,
+                "plan_name": "無料プラン",
+                "support_price": 0,
+                "fans_cnt": 20,
+                "sum_price": 0,
+                "sum_cnt": 0,
+                "continue_cnt": 0,
+                "new_cnt": 0,
+                "withdraw_cnt": 16
+            }
+        ]
+    }
+}

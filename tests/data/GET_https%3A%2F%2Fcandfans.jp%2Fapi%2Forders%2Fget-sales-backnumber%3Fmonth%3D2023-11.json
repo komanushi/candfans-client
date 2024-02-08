@@ -1,0 +1,16 @@
+{
+    "status": "SUCCESS",
+    "message": "売上情報を取得しました。",
+    "data": {
+        "total_price": 2800,
+        "sales": [
+            {
+                "backnumber_id": 1,
+                "plan_name": "有料プラン",
+                "month": "2023年12月",
+                "sum_price": 2800,
+                "sum_cnt": 2
+            }
+        ]
+    }
+}
