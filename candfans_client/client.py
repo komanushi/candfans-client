@@ -17,6 +17,7 @@ from candfans_client.models.sales import (
 )
 from candfans_client.models.user import (
     User,
+    MineUserInfo,
 )
 
 
@@ -294,6 +295,24 @@ class CandFansClient:
             page += 1
         return [User(**f) for f in followed]
 
+    def get_user_mine(self):
+        """
+        data: {
+            plans: [{}],
+            users: [{}]
+        }
+        :return:
+        """
+        try:
+            res_json = self._get(
+                f'api/user/get-user-mine',
+                headers=self.header
+            )
+            return MineUserInfo(**res_json['data'])
+        except CandFansException as e:
+            raise CandFansException(
+                f'failed get-user-mine [{e}]'
+            )
 
     def _get_csrf_cookies(self):
         url = f'{self._base_url}/api/sanctum/csrf-cookie'

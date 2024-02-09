@@ -2,7 +2,7 @@ from unittest import TestCase
 from unittest.mock import patch
 
 from candfans_client.client import CandFansClient
-from utils import mock_session_request
+from tests.utils import mock_session_request
 
 
 @patch('requests.sessions.Session.request', side_effect=mock_session_request)
@@ -95,3 +95,13 @@ class TestClient(TestCase):
         self.assertFalse(followed[0].is_official_creator)
         self.assertFalse(followed[1].is_follow)
         self.assertFalse(followed[1].is_official_creator)
+
+    def test_get_user_mine(self, *args):
+
+        client = CandFansClient(
+            email='test@test.com',
+            password='password'
+        )
+        mine_user_info = client.get_user_mine()
+        self.assertEqual(len(mine_user_info.plans), 2)
+        self.assertEqual(len(mine_user_info.users), 1)
