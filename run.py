@@ -28,6 +28,8 @@ def main():
     # print(len(res))
     # res = client.get_user_mine()
     # print(res.model_dump_json(indent=4))
+    res = client.get_timeline_month(user_id=872637)
+    print([r.model_dump() for r in res])
 
 
 if __name__ == "__main__":

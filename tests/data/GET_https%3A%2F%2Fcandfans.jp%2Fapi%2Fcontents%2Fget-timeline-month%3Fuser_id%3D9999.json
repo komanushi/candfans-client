@@ -1,0 +1,33 @@
+{
+    "status": "SUCCESS",
+    "message": "タイムラインを取得しました。",
+    "data": [
+        {
+            "column_name": "2024年02月"
+        },
+        {
+            "column_name": "2024年01月"
+        },
+        {
+            "column_name": "2023年12月"
+        },
+        {
+            "column_name": "2023年11月"
+        },
+        {
+            "column_name": "2023年10月"
+        },
+        {
+            "column_name": "2023年09月"
+        },
+        {
+            "column_name": "2023年08月"
+        },
+        {
+            "column_name": "2023年07月"
+        },
+        {
+            "column_name": "2023年06月"
+        }
+    ]
+}
