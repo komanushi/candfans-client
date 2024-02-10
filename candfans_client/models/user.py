@@ -3,7 +3,7 @@ from typing import Optional, List
 
 import dateutil.parser
 
-from pydantic import BaseModel
+from pydantic import BaseModel, conint
 
 
 class User(BaseModel):
@@ -22,7 +22,7 @@ class DetailUser(BaseModel):
     user_code: str
     email: str
     age: int
-    birthday: datetime
+    birthday: Optional[datetime]
     username: str
     gender: int
     profile_cover_img: str
@@ -73,7 +73,8 @@ class DetailUser(BaseModel):
 
     def __init__(self, **data):
         # YYYY-MM-DD
-        data['birthday'] = dateutil.parser.parse(data['birthday'])
+        if data.get('birthday'):
+            data['birthday'] = dateutil.parser.parse(data['birthday'])
 
         super().__init__(**data)
 
@@ -107,4 +108,48 @@ class Plan(BaseModel):
 
 class MineUserInfo(BaseModel):
     users: List[DetailUser]
+    plans: List[Plan]
+
+
+class QueriedUser(BaseModel):
+    id: int
+    user_code: str
+    username: str
+    profile_cover_img: str
+    profile_text: str
+    profile_img: str
+    creater_genre: conint(ge=0, le=2)
+    link_twitter: str
+    link_instagram: str
+    link_tiktok: str
+    link_youtube: str
+    link_amazon: str
+    link_facebook: str
+    link_website: str
+    apeal_img1: str
+    apeal_img2: str
+    apeal_img3: str
+    follower_cnt: conint(ge=0)
+    follow_cnt: conint(ge=0)
+    like_cnt: conint(ge=0)
+    fans_cnt: conint(ge=0)
+    post_cnt: conint(ge=0)
+    image_cnt: conint(ge=0)
+    movie_cnt: conint(ge=0)
+    is_follow: bool
+    is_followed: bool
+    is_fansed: bool
+    is_block: bool
+    is_blocked: bool
+    is_ban: bool
+    can_send_dm: bool
+    delete_at: Optional[str]
+    is_accept_comment: bool
+    is_official_creator: bool
+    is_on_air: bool
+    live_url: str
+
+
+class UserInfo(BaseModel):
+    user: QueriedUser
     plans: List[Plan]

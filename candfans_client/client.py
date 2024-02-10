@@ -18,6 +18,7 @@ from candfans_client.models.sales import (
 from candfans_client.models.user import (
     User,
     MineUserInfo,
+    UserInfo
 )
 
 
@@ -312,6 +313,18 @@ class CandFansClient:
         except CandFansException as e:
             raise CandFansException(
                 f'failed get-user-mine [{e}]'
+            )
+
+    def get_users(self, user_code: str):
+        try:
+            res_json = self._get(
+                f'api/user/get-users?user_code={user_code}',
+                headers=self.header
+            )
+            return UserInfo(**res_json['data'])
+        except CandFansException as e:
+            raise CandFansException(
+                f'failed get_users [{e}]'
             )
 
     def _get_csrf_cookies(self):

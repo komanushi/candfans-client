@@ -26,8 +26,8 @@ def main():
     # print(len(res))
     # res = client.get_followed(1025744)
     # print(len(res))
-    res = client.get_user_mine()
-    print(res.model_dump_json(indent=4))
+    # res = client.get_user_mine()
+    # print(res.model_dump_json(indent=4))
 
 
 if __name__ == "__main__":

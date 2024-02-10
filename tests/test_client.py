@@ -105,3 +105,13 @@ class TestClient(TestCase):
         mine_user_info = client.get_user_mine()
         self.assertEqual(len(mine_user_info.plans), 2)
         self.assertEqual(len(mine_user_info.users), 1)
+
+    def test_get_users(self, *args):
+
+        client = CandFansClient(
+            email='test@test.com',
+            password='password'
+        )
+        user_info = client.get_users('dummy_user')
+        self.assertEqual(len(user_info.plans), 2)
+        self.assertEqual(user_info.user.user_code, 'dummy_user')
