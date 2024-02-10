@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 from candfans_client.client import CandFansClient
 from candfans_client.models.timeline import PostType
+from candfans_client.models.user import FollowStatus
 from tests.utils import mock_session_request
 
 
@@ -154,3 +155,14 @@ class TestClient(TestCase):
         )
         self.assertEqual(len(posts), 2)
         self.assertEqual(posts[0].plans[0].plan_id, 123)
+
+    def test_follow(self, *args):
+
+        client = CandFansClient(
+            email='test@test.com',
+            password='password'
+        )
+        ret = client.follow(
+            user_id=9999,
+        )
+        self.assertEqual(ret, FollowStatus.FOLLOWED)

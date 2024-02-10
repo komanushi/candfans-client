@@ -18,7 +18,8 @@ from candfans_client.models.sales import (
 from candfans_client.models.user import (
     User,
     MineUserInfo,
-    UserInfo
+    UserInfo,
+    FollowStatus
 )
 from candfans_client.models.timeline import (
     Post,
@@ -390,6 +391,24 @@ class CandFansClient:
 
         return [Post(**f) for f in posts]
 
+    def follow(self, user_id: int) -> FollowStatus:
+        try:
+            cookies = self._get_csrf_cookies()
+            self._xsrf_token = unquote(cookies['XSRF-TOKEN'])
+            res_json = self._put(
+                f'api/user/put-follow/{user_id}',
+                headers=self.header
+            )
+            if res_json['message'] == 'フォローしました。':
+                return FollowStatus.FOLLOWED
+            if res_json['message'] == 'フォローを解除しました。':
+                return FollowStatus.UNFOLLOWED
+
+        except CandFansException as e:
+            raise CandFansException(
+                f'failed follow of [{user_id}] [{e}]'
+            )
+
     def _get_csrf_cookies(self):
         url = f'{self._base_url}/api/sanctum/csrf-cookie'
         res = self._session.get(url)
@@ -401,6 +420,9 @@ class CandFansClient:
 
     def _get(self, path: str, *arg, **kwargs):
         return self._request('GET', path, *arg, **kwargs)
+
+    def _put(self, path: str, *arg, **kwargs):
+        return self._request('PUT', path, *arg, **kwargs)
 
     def _request(self, method: str, path: str, *arg, **kwargs):
         url = f'{self.base_url}/{path}'

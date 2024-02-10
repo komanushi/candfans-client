@@ -1,9 +1,16 @@
+from enum import IntEnum
+
 from datetime import datetime
 from typing import Optional, List
 
 import dateutil.parser
 
 from pydantic import BaseModel, conint
+
+
+class FollowStatus(IntEnum):
+    FOLLOWED = 0
+    UNFOLLOWED = 1
 
 
 class User(BaseModel):
