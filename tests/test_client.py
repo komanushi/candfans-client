@@ -2,6 +2,7 @@ from unittest import TestCase
 from unittest.mock import patch
 
 from candfans_client.client import CandFansClient
+from candfans_client.models.timeline import PostType
 from tests.utils import mock_session_request
 
 
@@ -126,3 +127,30 @@ class TestClient(TestCase):
         self.assertEqual(len(timeline_months), 9)
         self.assertEqual(timeline_months[-1].column_name, '2023年06月')
         self.assertEqual(timeline_months[0].column_name, '2024年02月')
+
+    def test_get_timeline_with_public(self, *args):
+
+        client = CandFansClient(
+            email='test@test.com',
+            password='password'
+        )
+        posts = client.get_timeline(
+            user_id=9999,
+            post_types=[PostType.PUBLIC_ITEM],
+            month='2024-01'
+        )
+        self.assertEqual(len(posts), 2)
+
+    def test_get_timeline_with_limited_access(self, *args):
+
+        client = CandFansClient(
+            email='test@test.com',
+            password='password'
+        )
+        posts = client.get_timeline(
+            user_id=9999,
+            post_types=[PostType.LIMITED_ACCESS_ITEM],
+            month='2024-02'
+        )
+        self.assertEqual(len(posts), 2)
+        self.assertEqual(posts[0].plans[0].plan_id, 123)

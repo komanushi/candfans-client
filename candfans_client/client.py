@@ -2,7 +2,7 @@ import time
 import os
 import json
 
-from typing import List
+from typing import List, Optional
 from urllib.parse import unquote, quote_plus
 
 import requests
@@ -21,6 +21,8 @@ from candfans_client.models.user import (
     UserInfo
 )
 from candfans_client.models.timeline import (
+    Post,
+    PostType,
     TimelineMonth,
 )
 
@@ -342,6 +344,51 @@ class CandFansClient:
             raise CandFansException(
                 f'failed get_timeline_month [{e}]'
             )
+
+    def get_timeline(
+            self,
+            user_id: int,
+            post_types: List[PostType],
+            month: Optional[str] = None,
+            max_page: int = 10,
+    ) -> List[Post]:
+        """
+        https://candfans.jp/api/contents/get-timeline?user_id=999&post_type[]=0&post_type[]=1
+
+        post_type: [
+            0, 全体公開
+            1, 限定公開
+            2, 単品販売
+        ]
+        :return:
+        """
+        posts = []
+        page = 1
+        post_types_str = '&'.join([p.query_str for p in post_types])
+        query_param = f'user_id={user_id}&{post_types_str}'
+        if month is not None:
+            query_param += f'&month={month}'
+
+        while True:
+            try:
+                res_json = self._get(
+                    f'api/contents/get-timeline?{query_param}&page={page}',
+                    headers=self.header
+                )
+            except CandFansException as e:
+                raise CandFansException(
+                    f'failed get timeline of {query_param} page {page} [{e}]'
+                )
+            if len(res_json['data']) == 0:
+                break
+            posts += res_json['data']
+
+            time.sleep(0.5)
+            page += 1
+            if page > max_page:
+                break
+
+        return [Post(**f) for f in posts]
 
     def _get_csrf_cookies(self):
         url = f'{self._base_url}/api/sanctum/csrf-cookie'
