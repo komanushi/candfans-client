@@ -251,7 +251,7 @@ class CandFansClient:
                 f'failed get sales for month {month_yyyy_mm}[{e}]'
             )
 
-    def get_follows(self, user_id: int) -> List[User]:
+    def get_follows(self, user_id: int, max_page: int = 10,) -> List[User]:
         """
         https://candfans.jp/api/user/get-follow/1?page=1
         :return:
@@ -275,9 +275,11 @@ class CandFansClient:
 
             time.sleep(0.5)
             page += 1
+            if page > max_page:
+                break
         return [User(**f) for f in follows]
 
-    def get_followed(self, user_id: int) -> List[User]:
+    def get_followed(self, user_id: int, max_page: int = 10) -> List[User]:
         """
         https://candfans.jp/api/user/get-followed/1?page=1
         :return:
@@ -300,6 +302,10 @@ class CandFansClient:
 
             time.sleep(0.5)
             page += 1
+
+            if page > max_page:
+                break
+
         return [User(**f) for f in followed]
 
     def get_user_mine(self):
