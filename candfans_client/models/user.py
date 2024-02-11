@@ -62,7 +62,7 @@ class DetailUser(BaseModel):
     dm_paid_open: bool
     follower_cnt: int
     follow_cnt: int
-    fans_cnt: int
+    fans_cnt: Optional[int]
     is_ban: bool
     delete_at: Optional[datetime]
     is_mute_senssitive: bool
@@ -89,14 +89,14 @@ class DetailUser(BaseModel):
 class Plan(BaseModel):
     plan_id: int
     user_id: int
-    thanks_message_template_id: int
+    thanks_message_template_id: Optional[int]
     plan_name: str
     support_price: int
     total_support_price: int
     plan_detail: str
     r18: int
     status: int
-    fans_cnt: int
+    fans_cnt: Optional[int]
     is_fans: bool
     is_price_update: Optional[int]
     change_support_price: Optional[int]
@@ -125,7 +125,7 @@ class QueriedUser(BaseModel):
     profile_cover_img: str
     profile_text: str
     profile_img: str
-    creater_genre: conint(ge=0, le=2)
+    creater_genre: int
     link_twitter: str
     link_instagram: str
     link_tiktok: str
