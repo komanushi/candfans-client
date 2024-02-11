@@ -139,7 +139,7 @@ class QueriedUser(BaseModel):
     follower_cnt: conint(ge=0)
     follow_cnt: conint(ge=0)
     like_cnt: conint(ge=0)
-    fans_cnt: conint(ge=0)
+    fans_cnt: Optional[int]
     post_cnt: conint(ge=0)
     image_cnt: conint(ge=0)
     movie_cnt: conint(ge=0)
