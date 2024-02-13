@@ -78,7 +78,7 @@ class TestClient(TestCase):
             email='test@test.com',
             password='password'
         )
-        follows = client.get_follows(999)
+        follows = list(client.get_follows(999))
         self.assertEqual(len(follows), 2)
         self.assertTrue(follows[0].is_follow)
         self.assertTrue(follows[0].is_official_creator)
@@ -91,7 +91,7 @@ class TestClient(TestCase):
             email='test@test.com',
             password='password'
         )
-        followed = client.get_followed(999)
+        followed = list(client.get_followed(999))
         self.assertEqual(len(followed), 2)
         self.assertFalse(followed[0].is_follow)
         self.assertFalse(followed[0].is_official_creator)

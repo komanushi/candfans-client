@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import time
 import os
 import json
 
-from typing import List, Optional
+from typing import List, Optional, Generator
 from urllib.parse import unquote, quote_plus
 
 import requests
@@ -158,7 +160,7 @@ class CandFansClient:
                 f'failed get sales for month {month_yyyy_mm}[{e}]'
             )
 
-    def get_sales_subscribe(self, month_yyyy_mm: str):
+    def get_sales_subscribe(self, month_yyyy_mm: str) -> SalesSubscribe:
         """
         {
           "status": "SUCCESS",
@@ -251,12 +253,11 @@ class CandFansClient:
                 f'failed get sales for month {month_yyyy_mm}[{e}]'
             )
 
-    def get_follows(self, user_id: int, max_page: int = 10,) -> List[User]:
+    def get_follows(self, user_id: int, max_page: int = 10) -> Generator[User, None, None]:
         """
         https://candfans.jp/api/user/get-follow/1?page=1
         :return:
         """
-        follows = []
         page = 1
         while True:
             try:
@@ -271,20 +272,19 @@ class CandFansClient:
             if len(res_json['data']) == 0:
                 break
 
-            follows += res_json['data']
+            for f in res_json['data']:
+                yield User(**f)
 
-            time.sleep(0.5)
             page += 1
             if page > max_page:
                 break
-        return [User(**f) for f in follows]
+            time.sleep(0.5)
 
-    def get_followed(self, user_id: int, max_page: int = 10) -> List[User]:
+    def get_followed(self, user_id: int, max_page: int = 10) -> Generator[User, None, None]:
         """
         https://candfans.jp/api/user/get-followed/1?page=1
         :return:
         """
-        followed = []
         page = 1
         while True:
             try:
@@ -298,17 +298,14 @@ class CandFansClient:
                 )
             if len(res_json['data']) == 0:
                 break
-            followed += res_json['data']
-
-            time.sleep(0.5)
+            for f in res_json['data']:
+                yield User(**f)
             page += 1
-
             if page > max_page:
                 break
+            time.sleep(0.5)
 
-        return [User(**f) for f in followed]
-
-    def get_user_mine(self):
+    def get_user_mine(self) -> MineUserInfo:
         """
         data: {
             plans: [{}],
@@ -327,7 +324,7 @@ class CandFansClient:
                 f'failed get-user-mine [{e}]'
             )
 
-    def get_users(self, user_code: str):
+    def get_users(self, user_code: str) -> UserInfo:
         try:
             res_json = self._get(
                 f'api/user/get-users?user_code={user_code}',
@@ -358,7 +355,7 @@ class CandFansClient:
             post_types: List[PostType],
             month: Optional[str] = None,
             max_page: int = 10,
-    ) -> List[Post]:
+    ) -> Generator[Post, None, None]:
         """
         https://candfans.jp/api/contents/get-timeline?user_id=999&post_type[]=0&post_type[]=1
 
@@ -369,7 +366,6 @@ class CandFansClient:
         ]
         :return:
         """
-        posts = []
         page = 1
         post_types_str = '&'.join([p.query_str for p in post_types])
         query_param = f'user_id={user_id}&{post_types_str}'
@@ -388,14 +384,12 @@ class CandFansClient:
                 )
             if len(res_json['data']) == 0:
                 break
-            posts += res_json['data']
-
-            time.sleep(0.5)
+            for p in res_json['data']:
+                yield Post(**p)
             page += 1
             if page > max_page:
                 break
-
-        return [Post(**f) for f in posts]
+            time.sleep(0.5)
 
     def follow(self, user_id: int) -> FollowStatus:
         try:
