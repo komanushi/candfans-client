@@ -1,3 +1,4 @@
+import datetime
 from enum import IntEnum
 from typing import Optional, List
 
@@ -16,6 +17,12 @@ class PostType(IntEnum):
 
 class TimelineMonth(BaseModel):
     column_name: str
+
+    @property
+    def formatted_month_str(self) -> str:
+        return datetime.datetime.strptime(
+            self.column_name, '%Y年%m月'
+        ).strftime('%Y-%m')
 
 
 class ShortPlan(BaseModel):
