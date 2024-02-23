@@ -135,11 +135,11 @@ class TestClient(TestCase):
             email='test@test.com',
             password='password'
         )
-        posts = client.get_timeline(
+        posts = list(client.get_timeline(
             user_id=9999,
             post_types=[PostType.PUBLIC_ITEM],
             month='2024-01'
-        )
+        ))
         self.assertEqual(len(posts), 2)
 
     def test_get_timeline_with_limited_access(self, *args):
@@ -148,11 +148,11 @@ class TestClient(TestCase):
             email='test@test.com',
             password='password'
         )
-        posts = client.get_timeline(
+        posts = list(client.get_timeline(
             user_id=9999,
             post_types=[PostType.LIMITED_ACCESS_ITEM],
             month='2024-02'
-        )
+        ))
         self.assertEqual(len(posts), 2)
         self.assertEqual(posts[0].plans[0].plan_id, 123)
 
