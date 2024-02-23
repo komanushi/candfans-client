@@ -253,12 +253,12 @@ class CandFansClient:
                 f'failed get sales for month {month_yyyy_mm}[{e}]'
             )
 
-    def get_follows(self, user_id: int, max_page: int = 10) -> Generator[User, None, None]:
+    def get_follows(self, user_id: int, start_page: int = 1, max_page: int = 10) -> Generator[User, None, None]:
         """
         https://candfans.jp/api/user/get-follow/1?page=1
         :return:
         """
-        page = 1
+        page = start_page
         while True:
             try:
                 res_json = self._get(
@@ -280,12 +280,12 @@ class CandFansClient:
                 break
             time.sleep(0.5)
 
-    def get_followed(self, user_id: int, max_page: int = 10) -> Generator[User, None, None]:
+    def get_followed(self, user_id: int, start_page: int = 1, max_page: int = 10) -> Generator[User, None, None]:
         """
         https://candfans.jp/api/user/get-followed/1?page=1
         :return:
         """
-        page = 1
+        page = start_page
         while True:
             try:
                 res_json = self._get(
@@ -354,6 +354,7 @@ class CandFansClient:
             user_id: int,
             post_types: List[PostType],
             month: Optional[str] = None,
+            start_page: int = 1,
             max_page: int = 10,
     ) -> Generator[Post, None, None]:
         """
@@ -366,7 +367,7 @@ class CandFansClient:
         ]
         :return:
         """
-        page = 1
+        page = start_page
         post_types_str = '&'.join([p.query_str for p in post_types])
         query_param = f'user_id={user_id}&{post_types_str}'
         if month is not None:
