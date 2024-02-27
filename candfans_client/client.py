@@ -34,12 +34,11 @@ class CandFansException(Exception):
     """ Exception raised when Candfans API """
 
 
-class CandFansClient:
-    def __init__(self, email: str, password: str, base_url: str = 'https://candfans.jp', debug: bool = False) -> None:
-        self._email = email
-        self._password = password
+class AnonymousCandFansClient:
+    def __init__(self, base_url: str = 'https://candfans.jp', debug: bool = False):
+
         self._base_url = base_url
-        self._xsrf_token = None
+        self._session = requests.Session()
         self.debug = debug
         if self.debug:
             import logging
@@ -51,12 +50,181 @@ class CandFansClient:
             logging.basicConfig(level=logging.DEBUG, format=fmt)
             http_client.HTTPConnection.debuglevel = 1
 
-        self._session = requests.Session()
-        self.logged_in = self.login()
-
     @property
     def base_url(self):
         return self._base_url
+
+    @property
+    def header(self):
+        base = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Origin': 'https://r18.candfans.jp',
+            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36'
+        }
+        return base
+
+    def get_follows(self, user_id: int, start_page: int = 1, max_page: int = 10) -> Generator[User, None, None]:
+        """
+        https://candfans.jp/api/user/get-follow/1?page=1
+        :return:
+        """
+        page = start_page
+        while True:
+            try:
+                res_json = self._get(
+                    f'api/user/get-follow/{user_id}?page={page}',
+                    headers=self.header
+                )
+            except CandFansException as e:
+                raise CandFansException(
+                    f'failed get follows of {user_id} page {page} [{e}]'
+                )
+            if len(res_json['data']) == 0:
+                break
+
+            for f in res_json['data']:
+                yield User(**f)
+
+            page += 1
+            if page > max_page:
+                break
+            time.sleep(0.5)
+
+    def get_followed(self, user_id: int, start_page: int = 1, max_page: int = 10) -> Generator[User, None, None]:
+        """
+        https://candfans.jp/api/user/get-followed/1?page=1
+        :return:
+        """
+        page = start_page
+        while True:
+            try:
+                res_json = self._get(
+                    f'api/user/get-followed/{user_id}?page={page}',
+                    headers=self.header
+                )
+            except CandFansException as e:
+                raise CandFansException(
+                    f'failed get followed of {user_id} page {page} [{e}]'
+                )
+            if len(res_json['data']) == 0:
+                break
+            for f in res_json['data']:
+                yield User(**f)
+            page += 1
+            if page > max_page:
+                break
+            time.sleep(0.5)
+
+    def get_users(self, user_code: str) -> UserInfo:
+        try:
+            res_json = self._get(
+                f'api/user/get-users?user_code={user_code}',
+                headers=self.header
+            )
+            return UserInfo(**res_json['data'])
+        except CandFansException as e:
+            raise CandFansException(
+                f'failed get_users [{e}]'
+            )
+
+    def get_timeline_month(self, user_id: int) -> List[TimelineMonth]:
+        try:
+            res_json = self._get(
+                f'api/contents/get-timeline-month?user_id={user_id}',
+                headers=self.header
+            )
+
+            return [TimelineMonth(**r) for r in res_json['data']]
+        except CandFansException as e:
+            raise CandFansException(
+                f'failed get_timeline_month [{e}]'
+            )
+
+    def get_timeline(
+            self,
+            user_id: int,
+            post_types: List[PostType],
+            month: Optional[str] = None,
+            start_page: int = 1,
+            max_page: int = 10,
+    ) -> Generator[Post, None, None]:
+        """
+        https://candfans.jp/api/contents/get-timeline?user_id=999&post_type[]=0&post_type[]=1
+
+        post_type: [
+            0, 全体公開
+            1, 限定公開
+            2, 単品販売
+        ]
+        :return:
+        """
+        page = start_page
+        post_types_str = '&'.join([p.query_str for p in post_types])
+        query_param = f'user_id={user_id}&{post_types_str}'
+        if month is not None:
+            query_param += f'&month={month}'
+
+        while True:
+            try:
+                res_json = self._get(
+                    f'api/contents/get-timeline?{query_param}&page={page}',
+                    headers=self.header
+                )
+            except CandFansException as e:
+                raise CandFansException(
+                    f'failed get timeline of {query_param} page {page} [{e}]'
+                )
+            if len(res_json['data']) == 0:
+                break
+            for p in res_json['data']:
+                yield Post(**p)
+            page += 1
+            if page > max_page:
+                break
+            time.sleep(0.5)
+
+    def _post(self, path: str, *arg, **kwargs):
+        return self._request('POST', path, *arg, **kwargs)
+
+    def _get(self, path: str, *arg, **kwargs):
+        return self._request('GET', path, *arg, **kwargs)
+
+    def _put(self, path: str, *arg, **kwargs):
+        return self._request('PUT', path, *arg, **kwargs)
+
+    def _request(self, method: str, path: str, *arg, **kwargs):
+        url = f'{self.base_url}/{path}'
+        response = self._session.request(method, url, *arg, **kwargs)
+        response_json = response.json()
+
+        if self.debug:
+            os.makedirs('./debug', exist_ok=True)
+            with open(f'debug/{method}_{quote_plus(url)}.json', mode='w') as f:
+                f.write(json.dumps(response_json, indent=4, ensure_ascii=False))
+
+        if 'status' not in response_json:
+            print(response_json)
+            if 'message' in response_json:
+                raise CandFansException(response_json['message'])
+            raise CandFansException('unknown error')
+
+        if response_json['status'] != 'SUCCESS':
+            raise CandFansException(
+                f'failed {method} for {path} message [{response_json["message"]}]'
+            )
+        return response_json
+
+
+class CandFansClient(AnonymousCandFansClient):
+    def __init__(self, email: str, password: str, base_url: str = 'https://candfans.jp', debug: bool = False) -> None:
+        super().__init__(base_url, debug)
+        self._email = email
+        self._password = password
+        self._xsrf_token = None
+
+        self.logged_in = self.login()
+
 
     @property
     def header(self):
@@ -253,58 +421,6 @@ class CandFansClient:
                 f'failed get sales for month {month_yyyy_mm}[{e}]'
             )
 
-    def get_follows(self, user_id: int, start_page: int = 1, max_page: int = 10) -> Generator[User, None, None]:
-        """
-        https://candfans.jp/api/user/get-follow/1?page=1
-        :return:
-        """
-        page = start_page
-        while True:
-            try:
-                res_json = self._get(
-                    f'api/user/get-follow/{user_id}?page={page}',
-                    headers=self.header
-                )
-            except CandFansException as e:
-                raise CandFansException(
-                    f'failed get follows of {user_id} page {page} [{e}]'
-                )
-            if len(res_json['data']) == 0:
-                break
-
-            for f in res_json['data']:
-                yield User(**f)
-
-            page += 1
-            if page > max_page:
-                break
-            time.sleep(0.5)
-
-    def get_followed(self, user_id: int, start_page: int = 1, max_page: int = 10) -> Generator[User, None, None]:
-        """
-        https://candfans.jp/api/user/get-followed/1?page=1
-        :return:
-        """
-        page = start_page
-        while True:
-            try:
-                res_json = self._get(
-                    f'api/user/get-followed/{user_id}?page={page}',
-                    headers=self.header
-                )
-            except CandFansException as e:
-                raise CandFansException(
-                    f'failed get followed of {user_id} page {page} [{e}]'
-                )
-            if len(res_json['data']) == 0:
-                break
-            for f in res_json['data']:
-                yield User(**f)
-            page += 1
-            if page > max_page:
-                break
-            time.sleep(0.5)
-
     def get_user_mine(self) -> MineUserInfo:
         """
         data: {
@@ -323,74 +439,6 @@ class CandFansClient:
             raise CandFansException(
                 f'failed get-user-mine [{e}]'
             )
-
-    def get_users(self, user_code: str) -> UserInfo:
-        try:
-            res_json = self._get(
-                f'api/user/get-users?user_code={user_code}',
-                headers=self.header
-            )
-            return UserInfo(**res_json['data'])
-        except CandFansException as e:
-            raise CandFansException(
-                f'failed get_users [{e}]'
-            )
-
-    def get_timeline_month(self, user_id: int) -> List[TimelineMonth]:
-        try:
-            res_json = self._get(
-                f'api/contents/get-timeline-month?user_id={user_id}',
-                headers=self.header
-            )
-
-            return [TimelineMonth(**r) for r in res_json['data']]
-        except CandFansException as e:
-            raise CandFansException(
-                f'failed get_timeline_month [{e}]'
-            )
-
-    def get_timeline(
-            self,
-            user_id: int,
-            post_types: List[PostType],
-            month: Optional[str] = None,
-            start_page: int = 1,
-            max_page: int = 10,
-    ) -> Generator[Post, None, None]:
-        """
-        https://candfans.jp/api/contents/get-timeline?user_id=999&post_type[]=0&post_type[]=1
-
-        post_type: [
-            0, 全体公開
-            1, 限定公開
-            2, 単品販売
-        ]
-        :return:
-        """
-        page = start_page
-        post_types_str = '&'.join([p.query_str for p in post_types])
-        query_param = f'user_id={user_id}&{post_types_str}'
-        if month is not None:
-            query_param += f'&month={month}'
-
-        while True:
-            try:
-                res_json = self._get(
-                    f'api/contents/get-timeline?{query_param}&page={page}',
-                    headers=self.header
-                )
-            except CandFansException as e:
-                raise CandFansException(
-                    f'failed get timeline of {query_param} page {page} [{e}]'
-                )
-            if len(res_json['data']) == 0:
-                break
-            for p in res_json['data']:
-                yield Post(**p)
-            page += 1
-            if page > max_page:
-                break
-            time.sleep(0.5)
 
     def follow(self, user_id: int) -> FollowStatus:
         try:
@@ -415,34 +463,3 @@ class CandFansClient:
         res = self._session.get(url)
         cookies = res.cookies
         return cookies
-
-    def _post(self, path: str, *arg, **kwargs):
-        return self._request('POST', path, *arg, **kwargs)
-
-    def _get(self, path: str, *arg, **kwargs):
-        return self._request('GET', path, *arg, **kwargs)
-
-    def _put(self, path: str, *arg, **kwargs):
-        return self._request('PUT', path, *arg, **kwargs)
-
-    def _request(self, method: str, path: str, *arg, **kwargs):
-        url = f'{self.base_url}/{path}'
-        response = self._session.request(method, url, *arg, **kwargs)
-        response_json = response.json()
-
-        if self.debug:
-            os.makedirs('./debug', exist_ok=True)
-            with open(f'debug/{method}_{quote_plus(url)}.json', mode='w') as f:
-                f.write(json.dumps(response_json, indent=4, ensure_ascii=False))
-
-        if 'status' not in response_json:
-            print(response_json)
-            if 'message' in response_json:
-                raise CandFansException(response_json['message'])
-            raise CandFansException('unknown error')
-
-        if response_json['status'] != 'SUCCESS':
-            raise CandFansException(
-                f'failed {method} for {path} message [{response_json["message"]}]'
-            )
-        return response_json
