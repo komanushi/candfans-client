@@ -1,6 +1,7 @@
 import os
 from candfans_client.models.timeline import PostType
 from candfans_client.client import CandFansClient, AnonymousCandFansClient
+from candfans_client.async_client import AsyncAnonymousCandFansClient
 
 
 def main():
@@ -40,6 +41,21 @@ def main():
     # print([r.model_dump() for r in res])
 
 
+async def async_main():
+    anonymous_client = AsyncAnonymousCandFansClient(debug=False)
+    # res = anonymous_client.get_followed(1025744)
+    # print(len(list(res)))
+    res = await anonymous_client.get_users('hamayoko333')
+    # print(resnymous_client.get_users('hamayoko333')
+    # print(res)
+    cnt = 0
+    async for r in anonymous_client.get_timeline(res.user.id, post_types=[PostType.PUBLIC_ITEM]):
+        print(r)
+        cnt += 1
+        if cnt > 5:
+            break
 
 if __name__ == "__main__":
-    main()
+    import asyncio
+    asyncio.run(async_main())
+    # main()

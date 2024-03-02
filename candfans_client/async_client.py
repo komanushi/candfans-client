@@ -1,27 +1,19 @@
 from __future__ import annotations
 
-import time
+import asyncio
 import os
 import json
 
-from typing import List, Optional, Generator
-from urllib.parse import unquote, quote_plus
+from typing import List, Optional, AsyncGenerator
+from urllib.parse import quote_plus, unquote
 
 import httpx
 
-from candfans_client.models.sales import (
-    Sales,
-    SalesHistory,
-    SalesPurchasePost,
-    SalesSubscribe,
-    SalesChip,
+from candfans_client.models.sales import SalesHistory, Sales, SalesPurchasePost, SalesSubscribe, SalesChip, \
     SalesBacknumber
-)
 from candfans_client.models.user import (
     User,
-    MineUserInfo,
-    UserInfo,
-    FollowStatus
+    UserInfo, MineUserInfo, FollowStatus,
 )
 from candfans_client.models.timeline import (
     Post,
@@ -29,14 +21,17 @@ from candfans_client.models.timeline import (
     TimelineMonth,
 )
 
-from candfans_client.exceptions import CandFansException
+
+class CandFansException(Exception):
+    """ Exception raised when Candfans API """
 
 
-class AnonymousCandFansClient:
+class AsyncAnonymousCandFansClient:
+
     def __init__(self, base_url: str = 'https://candfans.jp', debug: bool = False):
 
         self._base_url = base_url
-        self._session = httpx.Client()
+        self._session = httpx.AsyncClient()
         self.debug = debug
         if self.debug:
             import logging
@@ -47,6 +42,7 @@ class AnonymousCandFansClient:
             fmt = "[DEBUG LOGGING][%(asctime)s] %(levelname)s %(name)s :%(message)s"
             logging.basicConfig(level=logging.DEBUG, format=fmt)
             http_client.HTTPConnection.debuglevel = 1
+
 
     @property
     def base_url(self):
@@ -62,7 +58,9 @@ class AnonymousCandFansClient:
         }
         return base
 
-    def get_follows(self, user_id: int, start_page: int = 1, max_page: int = 10) -> Generator[User, None, None]:
+    async def get_follows(
+            self, user_id: int, start_page: int = 1, max_page: int = 10
+    ) -> AsyncGenerator[User, None]:
         """
         https://candfans.jp/api/user/get-follow/1?page=1
         :return:
@@ -70,7 +68,7 @@ class AnonymousCandFansClient:
         page = start_page
         while True:
             try:
-                res_json = self._get(
+                res_json = await self._get(
                     f'api/user/get-follow/{user_id}?page={page}',
                     headers=self.header
                 )
@@ -87,9 +85,11 @@ class AnonymousCandFansClient:
             page += 1
             if page > max_page:
                 break
-            time.sleep(0.5)
+            await asyncio.sleep(0.5)
 
-    def get_followed(self, user_id: int, start_page: int = 1, max_page: int = 10) -> Generator[User, None, None]:
+    async def get_followed(
+            self, user_id: int, start_page: int = 1, max_page: int = 10
+    ) -> AsyncGenerator[User, None]:
         """
         https://candfans.jp/api/user/get-followed/1?page=1
         :return:
@@ -97,7 +97,7 @@ class AnonymousCandFansClient:
         page = start_page
         while True:
             try:
-                res_json = self._get(
+                res_json = await self._get(
                     f'api/user/get-followed/{user_id}?page={page}',
                     headers=self.header
                 )
@@ -112,11 +112,11 @@ class AnonymousCandFansClient:
             page += 1
             if page > max_page:
                 break
-            time.sleep(0.5)
+            await asyncio.sleep(0.5)
 
-    def get_users(self, user_code: str) -> UserInfo:
+    async def get_users(self, user_code: str) -> UserInfo:
         try:
-            res_json = self._get(
+            res_json = await self._get(
                 f'api/user/get-users?user_code={user_code}',
                 headers=self.header
             )
@@ -126,9 +126,9 @@ class AnonymousCandFansClient:
                 f'failed get_users [{e}]'
             )
 
-    def get_timeline_month(self, user_id: int) -> List[TimelineMonth]:
+    async def get_timeline_month(self, user_id: int) -> List[TimelineMonth]:
         try:
-            res_json = self._get(
+            res_json = await self._get(
                 f'api/contents/get-timeline-month?user_id={user_id}',
                 headers=self.header
             )
@@ -139,14 +139,14 @@ class AnonymousCandFansClient:
                 f'failed get_timeline_month [{e}]'
             )
 
-    def get_timeline(
+    async def get_timeline(
             self,
             user_id: int,
             post_types: List[PostType],
             month: Optional[str] = None,
             start_page: int = 1,
             max_page: int = 10,
-    ) -> Generator[Post, None, None]:
+    ) -> AsyncGenerator[Post, None]:
         """
         https://candfans.jp/api/contents/get-timeline?user_id=999&post_type[]=0&post_type[]=1
 
@@ -165,7 +165,7 @@ class AnonymousCandFansClient:
 
         while True:
             try:
-                res_json = self._get(
+                res_json = await self._get(
                     f'api/contents/get-timeline?{query_param}&page={page}',
                     headers=self.header
                 )
@@ -180,20 +180,20 @@ class AnonymousCandFansClient:
             page += 1
             if page > max_page:
                 break
-            time.sleep(0.5)
+            await asyncio.sleep(0.5)
 
-    def _post(self, path: str, *arg, **kwargs):
-        return self._request('POST', path, *arg, **kwargs)
+    async def _post(self, path: str, *arg, **kwargs):
+        return await self._request('POST', path, *arg, **kwargs)
 
-    def _get(self, path: str, *arg, **kwargs):
-        return self._request('GET', path, *arg, **kwargs)
+    async def _get(self, path: str, *arg, **kwargs):
+        return await self._request('GET', path, *arg, **kwargs)
 
-    def _put(self, path: str, *arg, **kwargs):
-        return self._request('PUT', path, *arg, **kwargs)
+    async def _put(self, path: str, *arg, **kwargs):
+        return await self._request('PUT', path, *arg, **kwargs)
 
-    def _request(self, method: str, path: str, *arg, **kwargs):
+    async def _request(self, method: str, path: str, *arg, **kwargs):
         url = f'{self.base_url}/{path}'
-        response = self._session.request(method, url, *arg, **kwargs)
+        response = await self._session.request(method, url, *arg, **kwargs)
         response_json = response.json()
 
         if self.debug:
@@ -214,15 +214,14 @@ class AnonymousCandFansClient:
         return response_json
 
 
-class CandFansClient(AnonymousCandFansClient):
+class AsyncCandFansClient(AsyncAnonymousCandFansClient):
+
     def __init__(self, email: str, password: str, base_url: str = 'https://candfans.jp', debug: bool = False) -> None:
         super().__init__(base_url, debug)
         self._email = email
         self._password = password
         self._xsrf_token = None
-
-        self.logged_in = self.login()
-
+        self.logged_in = False
 
     @property
     def header(self):
@@ -236,11 +235,11 @@ class CandFansClient(AnonymousCandFansClient):
             base['X-Xsrf-Token'] = self._xsrf_token
         return base
 
-    def login(self) -> bool:
-        cookies = self._get_csrf_cookies()
+    async def login(self) -> bool:
+        cookies = await self._get_csrf_cookies()
         self._xsrf_token = unquote(cookies['XSRF-TOKEN'])
         try:
-            res = self._post(
+            res = await self._post(
                 'api/auth/login',
                 json={
                     'id': self._email,
@@ -248,11 +247,12 @@ class CandFansClient(AnonymousCandFansClient):
                 },
                 headers=self.header,
             )
+            self.logged_in = True
             return True
         except CandFansException as e:
             raise e
 
-    def get_sales_history(self, month_yyyy_mm: str) -> List[SalesHistory]:
+    async def get_sales_history(self, month_yyyy_mm: str) -> List[SalesHistory]:
         """
         https://candfans.jp/api/orders/get-sales-history?month=2023-12&page=1
         :return:
@@ -261,7 +261,7 @@ class CandFansClient(AnonymousCandFansClient):
         page = 1
         while True:
             try:
-                res_json = self._get(
+                res_json = await self._get(
                     f'api/orders/get-sales-history?month={month_yyyy_mm}&page={page}',
                     headers=self.header
                 )
@@ -272,14 +272,14 @@ class CandFansClient(AnonymousCandFansClient):
             if len(res_json['data']) == 0:
                 break
             histories += res_json['data']
-            time.sleep(0.5)
+            await asyncio.sleep(0.5)
 
             page += 1
         return [SalesHistory(**h) for h in histories]
 
-    def get_sales(self, month_yyyy_mm: str) -> List[Sales]:
+    async def get_sales(self, month_yyyy_mm: str) -> List[Sales]:
         try:
-            res_json = self._get(
+            res_json = await self._get(
                 f'api/orders/get-sales?month={month_yyyy_mm}',
                 headers=self.header
             )
@@ -289,7 +289,7 @@ class CandFansClient(AnonymousCandFansClient):
                 f'failed get sales for month {month_yyyy_mm}[{e}]'
             )
 
-    def get_sales_purchase_post(self, month_yyyy_mm: str) -> SalesPurchasePost:
+    async def get_sales_purchase_post(self, month_yyyy_mm: str) -> SalesPurchasePost:
         """
         {
           "status": "SUCCESS",
@@ -316,7 +316,7 @@ class CandFansClient(AnonymousCandFansClient):
         }
         """
         try:
-            res_json = self._get(
+            res_json = await self._get(
                 f'api/orders/get-sales-purchasepost?month={month_yyyy_mm}',
                 headers=self.header
             )
@@ -326,7 +326,7 @@ class CandFansClient(AnonymousCandFansClient):
                 f'failed get sales for month {month_yyyy_mm}[{e}]'
             )
 
-    def get_sales_subscribe(self, month_yyyy_mm: str) -> SalesSubscribe:
+    async def get_sales_subscribe(self, month_yyyy_mm: str) -> SalesSubscribe:
         """
         {
           "status": "SUCCESS",
@@ -350,7 +350,7 @@ class CandFansClient(AnonymousCandFansClient):
         }
         """
         try:
-            res_json = self._get(
+            res_json = await self._get(
                 f'api/orders/get-sales-subscribe?month={month_yyyy_mm}',
                 headers=self.header
             )
@@ -360,7 +360,7 @@ class CandFansClient(AnonymousCandFansClient):
                 f'failed get sales for month {month_yyyy_mm}[{e}]'
             )
 
-    def get_sales_chip(self, month_yyyy_mm: str) -> SalesChip:
+    async def get_sales_chip(self, month_yyyy_mm: str) -> SalesChip:
         """
         {
           "status": "SUCCESS",
@@ -379,7 +379,7 @@ class CandFansClient(AnonymousCandFansClient):
         }
         """
         try:
-            res_json = self._get(
+            res_json = await self._get(
                 f'api/orders/get-sales-chip?month={month_yyyy_mm}',
                 headers=self.header
             )
@@ -389,7 +389,7 @@ class CandFansClient(AnonymousCandFansClient):
                 f'failed get sales for month {month_yyyy_mm}[{e}]'
             )
 
-    def get_sales_backnumber(self, month_yyyy_mm: str) -> SalesBacknumber:
+    async def get_sales_backnumber(self, month_yyyy_mm: str) -> SalesBacknumber:
         """
         {
           "status": "SUCCESS",
@@ -409,7 +409,7 @@ class CandFansClient(AnonymousCandFansClient):
         }
         """
         try:
-            res_json = self._get(
+            res_json = await self._get(
                 f'api/orders/get-sales-backnumber?month={month_yyyy_mm}',
                 headers=self.header
             )
@@ -419,7 +419,7 @@ class CandFansClient(AnonymousCandFansClient):
                 f'failed get sales for month {month_yyyy_mm}[{e}]'
             )
 
-    def get_user_mine(self) -> MineUserInfo:
+    async def get_user_mine(self) -> MineUserInfo:
         """
         data: {
             plans: [{}],
@@ -428,7 +428,7 @@ class CandFansClient(AnonymousCandFansClient):
         :return:
         """
         try:
-            res_json = self._get(
+            res_json = await self._get(
                 f'api/user/get-user-mine',
                 headers=self.header
             )
@@ -438,11 +438,11 @@ class CandFansClient(AnonymousCandFansClient):
                 f'failed get-user-mine [{e}]'
             )
 
-    def follow(self, user_id: int) -> FollowStatus:
+    async def follow(self, user_id: int) -> FollowStatus:
         try:
-            cookies = self._get_csrf_cookies()
+            cookies = await self._get_csrf_cookies()
             self._xsrf_token = unquote(cookies['XSRF-TOKEN'])
-            res_json = self._put(
+            res_json = await self._put(
                 f'api/user/put-follow/{user_id}',
                 headers=self.header
             )
@@ -456,8 +456,8 @@ class CandFansClient(AnonymousCandFansClient):
                 f'failed follow of [{user_id}] [{e}]'
             )
 
-    def _get_csrf_cookies(self):
+    async def _get_csrf_cookies(self):
         url = f'{self._base_url}/api/sanctum/csrf-cookie'
-        res = self._session.get(url)
+        res = await self._session.get(url)
         cookies = res.cookies
         return cookies
