@@ -9,14 +9,14 @@ def main():
     #     password=os.getenv('CANDFANS_PASSWORD'),
     #     debug=True
     # )
-    anonymous_client = AnonymousCandFansClient()
+    anonymous_client = AnonymousCandFansClient(debug=False)
     # res = anonymous_client.get_followed(1025744)
     # print(len(list(res)))
     res = anonymous_client.get_users('hamayoko333')
     # print(resnymous_client.get_users('hamayoko333')
     # print(res)
     res = anonymous_client.get_timeline(res.user.id, post_types=[PostType.PUBLIC_ITEM])
-    print(list(res))
+    print(list(res)[0])
     # histories = client.get_sales_history('2023-11')
     # print(len(histories))
     # print(histories[0])

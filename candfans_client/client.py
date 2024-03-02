@@ -7,7 +7,7 @@ import json
 from typing import List, Optional, Generator
 from urllib.parse import unquote, quote_plus
 
-import requests
+import httpx
 
 from candfans_client.models.sales import (
     Sales,
@@ -38,7 +38,7 @@ class AnonymousCandFansClient:
     def __init__(self, base_url: str = 'https://candfans.jp', debug: bool = False):
 
         self._base_url = base_url
-        self._session = requests.Session()
+        self._session = httpx.Client()
         self.debug = debug
         if self.debug:
             import logging

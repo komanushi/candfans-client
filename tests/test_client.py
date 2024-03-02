@@ -7,7 +7,8 @@ from candfans_client.models.user import FollowStatus
 from tests.utils import mock_session_request
 
 
-@patch('requests.sessions.Session.request', side_effect=mock_session_request)
+#@patch('requests.sessions.Session.request', side_effect=mock_session_request)
+@patch('httpx._client.Client.request', side_effect=mock_session_request)
 class TestClient(TestCase):
     def test_login(self, *args):
         client = CandFansClient(
