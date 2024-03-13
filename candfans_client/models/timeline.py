@@ -9,6 +9,7 @@ class PostType(IntEnum):
     PUBLIC_ITEM = 0
     LIMITED_ACCESS_ITEM = 1
     INDIVIDUAL_ITEM = 2
+    BACK_NUMBER_ITEM = 3
 
     @property
     def query_str(self):
