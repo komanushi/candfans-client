@@ -20,10 +20,7 @@ from candfans_client.models.timeline import (
     PostType,
     TimelineMonth,
 )
-
-
-class CandFansException(Exception):
-    """ Exception raised when Candfans API """
+from candfans_client.exceptions import CandFansException
 
 
 class AsyncAnonymousCandFansClient:
