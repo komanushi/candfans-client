@@ -70,7 +70,6 @@ class DetailUser(BaseModel):
     is_official_creator: bool
     can_change_backnumber_price: bool
     is_card_change_required: bool
-    is_possible_comes: bool
     can_live_streaming: bool
     is_dm_available: bool
     reg_dt: datetime

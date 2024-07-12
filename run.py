@@ -5,18 +5,17 @@ from candfans_client.async_client import AsyncAnonymousCandFansClient
 
 
 def main():
-    # client = CandFansClient(
-    #     email=os.getenv('CANDFANS_EMAIL'),
-    #     password=os.getenv('CANDFANS_PASSWORD'),
-    #     debug=True
-    # )
-    anonymous_client = AnonymousCandFansClient(debug=False)
-    # res = anonymous_client.get_followed(1025744)
+    client = CandFansClient(
+        email=os.getenv('CANDFANS_EMAIL'),
+        password=os.getenv('CANDFANS_PASSWORD'),
+        debug=True
+    )
+    # anonymous_client = AnonymousCandFansClient(debug=False)
+    # res = client.get_followed(1025744)
     # print(len(list(res)))
-    res = anonymous_client.get_users('hamayoko333')
-    # print(resnymous_client.get_users('hamayoko333')
-    # print(res)
-    res = anonymous_client.get_timeline(res.user.id, post_types=[PostType.PUBLIC_ITEM])
+    res = client.get_users('hamayoko333')
+    print(res)
+    res = client.get_timeline(res.user.id, post_types=[PostType.PUBLIC_ITEM])
     print(list(res)[0])
     # histories = client.get_sales_history('2023-11')
     # print(len(histories))
@@ -32,9 +31,9 @@ def main():
     # backnumber = client.get_sales_backnumber('2024-01')
     # print(backnumber.total_price, len(backnumber.sales))
     # res = client.get_follows(1025744)
-    # print(len(res))
+    # print(len(list(res)))
     # res = client.get_followed(1025744)
-    # print(len(res))
+    # print(len(list(res)))
     # res = client.get_user_mine()
     # print(res.model_dump_json(indent=4))
     # res = client.get_timeline_month(user_id=872637)
@@ -56,6 +55,6 @@ async def async_main():
             break
 
 if __name__ == "__main__":
-    import asyncio
-    asyncio.run(async_main())
-    # main()
+    # import asyncio
+    # asyncio.run(async_main())
+    main()

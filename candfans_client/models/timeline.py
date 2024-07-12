@@ -52,6 +52,7 @@ class Post(BaseModel):
     post_date: str
     contents_type: int
     post_type: int
+    title: str
     contents_text: str
     over_contents_50str: int
     price: int

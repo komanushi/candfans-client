@@ -36,7 +36,7 @@ class AnonymousCandFansClient:
     def __init__(self, base_url: str = 'https://candfans.jp', debug: bool = False):
 
         self._base_url = base_url
-        self._session = httpx.Client()
+        self._session = httpx.Client(timeout=httpx.Timeout(5.0, read=20.0))
         self.debug = debug
         if self.debug:
             import logging

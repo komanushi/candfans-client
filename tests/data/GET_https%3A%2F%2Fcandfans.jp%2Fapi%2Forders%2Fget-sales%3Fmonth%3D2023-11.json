@@ -17,14 +17,8 @@
             "streaming_sum": 0,
             "purchase_cnt": 0,
             "purchase_sum": 0,
-            "purchase_affi_cnt": 0,
-            "purchase_affi_sum": 0,
             "subscribe_cnt": 2,
             "subscribe_sum": 3000,
-            "subscribe_affi_cnt": 0,
-            "subscribe_affi_sum": 0,
-            "affiliate_cnt": 0,
-            "affiliate_sum": 0,
             "affiliate_referrer_cnt": 0,
             "affiliate_referrer_sum": 0
         }

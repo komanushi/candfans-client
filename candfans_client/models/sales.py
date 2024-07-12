@@ -68,10 +68,10 @@ class SalesHistory(BaseModel):
 class Sales(BaseModel):
     """
     {
-        "chip_user_cnt": 0,
-        "chip_user_sum": 0,
-        "chip_post_cnt": 0,
-        "chip_post_sum": 0,
+        "chip_user_cnt": 1,
+        "chip_user_sum": 2505,
+        "chip_post_cnt": 4,
+        "chip_post_sum": 11690,
         "chip_message_cnt": 0,
         "chip_message_sum": 0,
         "message_cnt": 0,
@@ -80,16 +80,10 @@ class Sales(BaseModel):
         "backnumber_sum": 0,
         "streaming_cnt": 0,
         "streaming_sum": 0,
-        "purchase_cnt": 10,
-        "purchase_sum": 9999,
-        "purchase_affi_cnt": 0,
-        "purchase_affi_sum": 0,
-        "subscribe_cnt": 10,
-        "subscribe_sum": 9999,
-        "subscribe_affi_cnt": 0,
-        "subscribe_affi_sum": 0,
-        "affiliate_cnt": 0,
-        "affiliate_sum": 0,
+        "purchase_cnt": 0,
+        "purchase_sum": 0,
+        "subscribe_cnt": 23,
+        "subscribe_sum": 24550,
         "affiliate_referrer_cnt": 0,
         "affiliate_referrer_sum": 0
     }
@@ -108,14 +102,8 @@ class Sales(BaseModel):
     streaming_sum: int
     purchase_cnt: int
     purchase_sum: int
-    purchase_affi_cnt: int
-    purchase_affi_sum: int
     subscribe_cnt: int
     subscribe_sum: int
-    subscribe_affi_cnt: int
-    subscribe_affi_sum: int
-    affiliate_cnt: int
-    affiliate_sum: int
     affiliate_referrer_cnt: int
     affiliate_referrer_sum: int
 
