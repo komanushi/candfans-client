@@ -81,4 +81,8 @@ class Post(BaseModel):
     has_own_thumbnail: bool
     is_on_air: bool
     live_url: str
+    audio_time: Optional[float]
+    sample_time: Optional[float]
+    thumbnail_file: Optional[str]
+    share_count: int
     plans: List[ShortPlan]
