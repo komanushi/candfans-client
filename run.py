@@ -1,7 +1,8 @@
 import os
 from candfans_client.models.timeline import PostType
+from candfans_client.models.search import BetweenType
 from candfans_client.client import CandFansClient, AnonymousCandFansClient
-from candfans_client.async_client import AsyncAnonymousCandFansClient
+from candfans_client.async_client import AsyncAnonymousCandFansClient, AsyncCandFansClient
 
 
 def main():
@@ -10,13 +11,13 @@ def main():
         password=os.getenv('CANDFANS_PASSWORD'),
         debug=True
     )
-    # anonymous_client = AnonymousCandFansClient(debug=False)
+    # client = AnonymousCandFansClient(debug=False)
     # res = client.get_followed(1025744)
     # print(len(list(res)))
-    res = client.get_users('hamayoko333')
-    print(res)
-    res = client.get_timeline(res.user.id, post_types=[PostType.PUBLIC_ITEM])
-    print(list(res)[0])
+    # res = client.get_users('hamayoko333')
+    # print(res)
+    # res = client.get_timeline(res.user.id, post_types=[PostType.PUBLIC_ITEM])
+    # print(list(res)[0])
     # histories = client.get_sales_history('2023-11')
     # print(len(histories))
     # print(histories[0])
@@ -38,23 +39,52 @@ def main():
     # print(res.model_dump_json(indent=4))
     # res = client.get_timeline_month(user_id=872637)
     # print([r.model_dump() for r in res])
+    res = client.get_popular_creators(
+        between=BetweenType.DAY,
+        max_page=1
+    )
+    print([r.username for r in res])
+    res = client.get_popular_creators(
+        between=BetweenType.WEEK,
+        max_page=1
+    )
+    print([r.username for r in res])
+    res = client.get_popular_creators(
+        between=BetweenType.MONTH,
+        max_page=1
+    )
+    print([r.username for r in res])
+    res = client.get_popular_creators(
+        between=BetweenType.ALL,
+        max_page=1
+    )
+    print([r.username for r in res])
 
 
 async def async_main():
     anonymous_client = AsyncAnonymousCandFansClient(debug=False)
+    client = AsyncCandFansClient(
+        email=os.getenv('CANDFANS_EMAIL'),
+        password=os.getenv('CANDFANS_PASSWORD'),
+        debug=True
+    )
+    await client.login()
     # res = anonymous_client.get_followed(1025744)
     # print(len(list(res)))
     res = await anonymous_client.get_users('hamayoko333')
     # print(resnymous_client.get_users('hamayoko333')
     # print(res)
-    cnt = 0
-    async for r in anonymous_client.get_timeline(res.user.id, post_types=[PostType.PUBLIC_ITEM]):
-        print(r)
-        cnt += 1
-        if cnt > 5:
-            break
+    # cnt = 0
+    # async for r in anonymous_client.get_timeline(res.user.id, post_types=[PostType.PUBLIC_ITEM]):
+    #     print(r)
+    #     cnt += 1
+    #     if cnt > 5:
+    #         break
+    async for r in client.get_popular_creators(between=BetweenType.DAY, max_page=1):
+        print(r.username)
+
 
 if __name__ == "__main__":
-    # import asyncio
-    # asyncio.run(async_main())
-    main()
+    import asyncio
+    asyncio.run(async_main())
+    # main()

@@ -2,6 +2,7 @@ from unittest import TestCase
 from unittest.mock import patch
 
 from candfans_client.client import CandFansClient
+from candfans_client.models.search import BetweenType
 from candfans_client.models.timeline import PostType
 from candfans_client.models.user import FollowStatus
 from tests.utils import mock_session_request
@@ -166,3 +167,16 @@ class TestClient(TestCase):
             user_id=9999,
         )
         self.assertEqual(ret, FollowStatus.FOLLOWED)
+
+    def test_popular_creator(self, *args):
+        client = CandFansClient(
+            email='test@test.com',
+            password='password'
+        )
+        ret = client.get_popular_creators(
+            between=BetweenType.DAY,
+            start_page=1,
+            max_page=2
+        )
+        creators = list(ret)
+        self.assertEqual(len(creators), 10)

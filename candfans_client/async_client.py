@@ -11,6 +11,7 @@ import httpx
 
 from candfans_client.models.sales import SalesHistory, Sales, SalesPurchasePost, SalesSubscribe, SalesChip, \
     SalesBacknumber
+from candfans_client.models.search import BetweenType, Creator
 from candfans_client.models.user import (
     User,
     UserInfo, MineUserInfo, FollowStatus,
@@ -452,6 +453,36 @@ class AsyncCandFansClient(AsyncAnonymousCandFansClient):
             raise CandFansException(
                 f'failed follow of [{user_id}] [{e}]'
             )
+
+    async def get_popular_creators(
+        self,
+            between: BetweenType,
+            start_page: int = 1,
+            max_page: int = 10,
+    ) -> AsyncGenerator[Creator, None]:
+        """
+        https://candfans.jp/api/contents/get-popular-creator?between=DAY&page=1
+        :return:
+        """
+        page = start_page
+        while True:
+            try:
+                res_json = await self._get(
+                    f'api/contents/get-popular-creator?between={between.value}&page={page}',
+                    headers=self.header
+                )
+            except CandFansException as e:
+                raise CandFansException(
+                    f'failed get popular of {between} page {page} [{e}]'
+                )
+            if len(res_json['data']) == 0:
+                break
+            for f in res_json['data']:
+                yield Creator(**f)
+            page += 1
+            if page > max_page:
+                break
+            await asyncio.sleep(0.5)
 
     async def _get_csrf_cookies(self):
         url = f'{self._base_url}/api/sanctum/csrf-cookie'

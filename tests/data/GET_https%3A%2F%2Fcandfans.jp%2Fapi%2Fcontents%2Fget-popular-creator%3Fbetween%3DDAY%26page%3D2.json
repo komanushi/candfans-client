@@ -1,0 +1,61 @@
+{
+    "status": "SUCCESS",
+    "message": "人気クリエイターを取得しました。",
+    "data": [
+        {
+            "id": 6,
+            "user_code": "1",
+            "username": "1",
+            "profile_img": "/user/1/profile/f6d914037c8937028721b59d3d62a45a.jpg",
+            "profile_text": "",
+            "follow_cnt": 0,
+            "follower_cnt": 23328,
+            "like_cnt": 42068,
+            "is_official_creator": 1
+        },
+        {
+            "id": 7,
+            "user_code": "2",
+            "username": "2",
+            "profile_img": "/user/2/profile/dyCooxeZbYLf5ggcvsGysxpDUBOG77OqrKtZD8L7.png",
+            "profile_text": "",
+            "follow_cnt": 6239,
+            "follower_cnt": 7223,
+            "like_cnt": 0,
+            "is_official_creator": 1
+        },
+        {
+            "id": 8,
+            "user_code": "3",
+            "username": "3",
+            "profile_img": "/user/3/profile/i0YW0NNR864lVp7s7dHYhfg25rqJgeLx2ulzAEMG.png",
+            "profile_text": "",
+            "follow_cnt": 4350,
+            "follower_cnt": 89403,
+            "like_cnt": 25021,
+            "is_official_creator": 1
+        },
+        {
+            "id": 9,
+            "user_code": "4",
+            "username": "4",
+            "profile_img": "/user/4/profile/BP9s1pGez0VjFhpX2TIVpk4r19bsw5Sg3TzqXzc0.jpg",
+            "profile_text": "",
+            "follow_cnt": 0,
+            "follower_cnt": 80819,
+            "like_cnt": 111902,
+            "is_official_creator": 1
+        },
+        {
+            "id": 10,
+            "user_code": "5",
+            "username": "5",
+            "profile_img": "/user/5/profile/ua6axtVAi5nLe0K6CFqgKpGWcn1dDuBBp0SAfisX.jpg",
+            "profile_text": "",
+            "follow_cnt": 50,
+            "follower_cnt": 27513,
+            "like_cnt": 11196,
+            "is_official_creator": 1
+        }
+    ]
+}
