@@ -68,7 +68,6 @@ class Post(BaseModel):
     thumbnail_file: str
     like_cnt: int
     comments_cnt: int
-    chip_cnt: int
     is_like: bool
     can_browsing: bool
     can_send_chip: bool

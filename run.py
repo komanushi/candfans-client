@@ -14,10 +14,10 @@ def main():
     # client = AnonymousCandFansClient(debug=False)
     # res = client.get_followed(1025744)
     # print(len(list(res)))
-    # res = client.get_users('hamayoko333')
-    # print(res)
-    # res = client.get_timeline(res.user.id, post_types=[PostType.PUBLIC_ITEM])
-    # print(list(res)[0])
+    res = client.get_users('hamayoko333')
+    print(res)
+    res = client.get_timeline(res.user.id, post_types=[PostType.PUBLIC_ITEM])
+    print(list(res)[0])
     # histories = client.get_sales_history('2023-11')
     # print(len(histories))
     # print(histories[0])
@@ -37,8 +37,8 @@ def main():
     # print(len(list(res)))
     # res = client.get_user_mine()
     # print(res.model_dump_json(indent=4))
-    # res = client.get_timeline_month(user_id=872637)
-    # print([r.model_dump() for r in res])
+    res = client.get_timeline_month(user_id=872637)
+    print([r.model_dump() for r in res])
     res = client.get_popular_creators(
         between=BetweenType.DAY,
         max_page=1
@@ -85,6 +85,6 @@ async def async_main():
 
 
 if __name__ == "__main__":
-    import asyncio
-    asyncio.run(async_main())
-    # main()
+    # import asyncio
+    # asyncio.run(async_main())
+    main()
