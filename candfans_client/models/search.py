@@ -21,3 +21,13 @@ class Creator(BaseModel):
     follower_cnt: int
     like_cnt: int
     is_official_creator: bool
+
+
+class RankingCreator(BaseModel):
+    rank: int
+    user_id: int
+    user_code: str
+    username: str
+    profile_cover_path: Optional[str]
+    profile_icon_path: Optional[str]
+    profile_text: Optional[str]

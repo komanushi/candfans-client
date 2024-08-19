@@ -17,7 +17,7 @@ from candfans_client.models.sales import (
     SalesChip,
     SalesBacknumber
 )
-from candfans_client.models.search import BetweenType, Creator
+from candfans_client.models.search import BetweenType, Creator, RankingCreator
 from candfans_client.models.user import (
     User,
     MineUserInfo,
@@ -183,6 +183,46 @@ class AnonymousCandFansClient:
                 break
             time.sleep(0.5)
 
+    def get_creator_ranking(
+        self,
+        start_page: int = 1,
+        max_page: int = 10,
+        per_page: int = 10,
+    ) -> List[RankingCreator]:
+        """
+        https://candfans.jp/api/v3/ranking/creator?page=1&per-page=10
+        :return:
+        """
+        page = start_page
+        while True:
+            try:
+                res_json = self._v3_request(
+                    'GET',
+                    f'api/v3/ranking/creator?page={page}&per-page={per_page}',
+                    headers=self.header
+                )
+            except CandFansException as e:
+                raise CandFansException(
+                    f'failed get ranking page {page} per-page {per_page} [{e}]'
+                )
+            if len(res_json['ranking']) == 0:
+                break
+            for f in res_json['ranking']:
+                user = f['user']
+                yield RankingCreator(
+                    rank=f['rank'],
+                    user_id=user['id'],
+                    user_code=user['code'],
+                    username=user['name'],
+                    profile_cover_path=user['profile_cover_path'],
+                    profile_icon_path=user['profile_icon_path'],
+                    profile_text=user['profile_text'],
+                )
+            page += 1
+            if page > max_page:
+                break
+            time.sleep(0.5)
+
     def _post(self, path: str, *arg, **kwargs):
         return self._request('POST', path, *arg, **kwargs)
 
@@ -212,6 +252,18 @@ class AnonymousCandFansClient:
             raise CandFansException(
                 f'failed {method} for {path} message [{response_json["message"]}]'
             )
+        return response_json
+
+    def _v3_request(self, method: str, path: str, *arg, **kwargs):
+        url = f'{self.base_url}/{path}'
+        response = self._session.request(method, url, *arg, **kwargs)
+        response_json = response.json()
+
+        if self.debug:
+            os.makedirs('./debug', exist_ok=True)
+            with open(f'debug/{method}_{quote_plus(url)}.json', mode='w') as f:
+                f.write(json.dumps(response_json, indent=4, ensure_ascii=False))
+
         return response_json
 
 

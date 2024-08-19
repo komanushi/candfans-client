@@ -11,7 +11,7 @@ import httpx
 
 from candfans_client.models.sales import SalesHistory, Sales, SalesPurchasePost, SalesSubscribe, SalesChip, \
     SalesBacknumber
-from candfans_client.models.search import BetweenType, Creator
+from candfans_client.models.search import BetweenType, Creator, RankingCreator
 from candfans_client.models.user import (
     User,
     UserInfo, MineUserInfo, FollowStatus,
@@ -180,6 +180,46 @@ class AsyncAnonymousCandFansClient:
                 break
             await asyncio.sleep(0.5)
 
+    async def get_creator_ranking(
+        self,
+            start_page: int = 1,
+            max_page: int = 10,
+            per_page: int = 10,
+    ) -> AsyncGenerator[RankingCreator, None]:
+        """
+        https://candfans.jp/api/v3/ranking/creator?page=1&per-page=10
+        :return:
+        """
+        page = start_page
+        while True:
+            try:
+                res_json = await self._v3_request(
+                    'GET',
+                    f'api/v3/ranking/creator?page={page}&per-page={per_page}',
+                    headers=self.header
+                )
+            except CandFansException as e:
+                raise CandFansException(
+                    f'failed get ranking page {page} per-page {per_page} [{e}]'
+                )
+            if len(res_json['ranking']) == 0:
+                break
+            for f in res_json['ranking']:
+                user = f['user']
+                yield RankingCreator(
+                    rank=f['rank'],
+                    user_id=user['id'],
+                    user_code=user['code'],
+                    username=user['name'],
+                    profile_cover_path=user['profile_cover_path'],
+                    profile_icon_path=user['profile_icon_path'],
+                    profile_text=user['profile_text'],
+                )
+            page += 1
+            if page > max_page:
+                break
+            await asyncio.sleep(0.5)
+
     async def _post(self, path: str, *arg, **kwargs):
         return await self._request('POST', path, *arg, **kwargs)
 
@@ -209,6 +249,18 @@ class AsyncAnonymousCandFansClient:
             raise CandFansException(
                 f'failed {method} for {path} message [{response_json["message"]}]'
             )
+        return response_json
+
+    async def _v3_request(self, method: str, path: str, *arg, **kwargs):
+        url = f'{self.base_url}/{path}'
+        response = await self._session.request(method, url, *arg, **kwargs)
+        response_json = response.json()
+
+        if self.debug:
+            os.makedirs('./debug', exist_ok=True)
+            with open(f'debug/{method}_{quote_plus(url)}.json', mode='w') as f:
+                f.write(json.dumps(response_json, indent=4, ensure_ascii=False))
+
         return response_json
 
 
