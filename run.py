@@ -1,6 +1,6 @@
 import os
 from candfans_client.models.timeline import PostType
-from candfans_client.models.search import BetweenType
+from candfans_client.models.search import CreatorTerm
 from candfans_client.client import CandFansClient, AnonymousCandFansClient
 from candfans_client.async_client import AsyncAnonymousCandFansClient, AsyncCandFansClient
 
@@ -59,7 +59,7 @@ def main():
     #     max_page=1
     # )
     # print([r.username for r in res])
-    res = client.get_creator_ranking(start_page=1, max_page=1, per_page=100)
+    res = client.get_creator_ranking(start_page=1, max_page=1, per_page=10, terms=CreatorTerm.TOTALY)
     for x in res: print(x.rank, x.username)
 
 
@@ -82,7 +82,7 @@ async def async_main():
     #     cnt += 1
     #     if cnt > 5:
     #         break
-    async for r in client.get_creator_ranking(max_page=1, per_page=100):
+    async for r in client.get_creator_ranking(max_page=1, per_page=10, terms=CreatorTerm.TOTALY):
         print(r.rank, r.username)
 
 

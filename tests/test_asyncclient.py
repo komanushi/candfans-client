@@ -2,7 +2,6 @@ from unittest import IsolatedAsyncioTestCase
 from unittest.mock import patch
 
 from candfans_client.async_client import AsyncCandFansClient
-from candfans_client.models.search import BetweenType
 from candfans_client.models.timeline import PostType
 from candfans_client.models.user import FollowStatus
 from tests.utils import mock_session_request
@@ -182,18 +181,3 @@ class TestAsyncAnonymousCandFansClient(IsolatedAsyncioTestCase):
             user_id=9999,
         )
         self.assertEqual(ret, FollowStatus.FOLLOWED)
-
-    async def test_popular_creator(self, *args):
-        client = AsyncCandFansClient(
-            email='test@test.com',
-            password='password'
-        )
-        await client.login()
-        creators = []
-        async for r in client.get_popular_creators(
-            between=BetweenType.DAY,
-            start_page=1,
-            max_page=2
-        ):
-            creators.append(r)
-        self.assertEqual(len(creators), 10)

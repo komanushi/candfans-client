@@ -4,11 +4,11 @@ from pydantic import BaseModel
 from enum import Enum
 
 
-class BetweenType(Enum):
-    DAY = 'DAY'
-    WEEK = 'WEEK'
-    MONTH = 'MONTH'
-    ALL = 'ALL'
+class CreatorTerm(Enum):
+    DAILY = 'DAILY'
+    WEEKLY = 'WEEKLY'
+    MONTHLY = 'MONTHLY'
+    TOTALY = 'TOTALY'
 
 
 class Creator(BaseModel):

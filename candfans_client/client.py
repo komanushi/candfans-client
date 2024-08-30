@@ -17,7 +17,7 @@ from candfans_client.models.sales import (
     SalesChip,
     SalesBacknumber
 )
-from candfans_client.models.search import BetweenType, Creator, RankingCreator
+from candfans_client.models.search import RankingCreator, CreatorTerm
 from candfans_client.models.user import (
     User,
     MineUserInfo,
@@ -188,17 +188,19 @@ class AnonymousCandFansClient:
         start_page: int = 1,
         max_page: int = 10,
         per_page: int = 10,
+        terms: CreatorTerm = CreatorTerm.DAILY
     ) -> List[RankingCreator]:
         """
-        https://candfans.jp/api/v3/ranking/creator?page=1&per-page=10
+        https://candfans.jp/api/v3/ranking/creator?page=1&per-page=10&terms=DAILY
         :return:
         """
         page = start_page
+        print(terms)
         while True:
             try:
                 res_json = self._v3_request(
                     'GET',
-                    f'api/v3/ranking/creator?page={page}&per-page={per_page}',
+                    f'api/v3/ranking/creator?page={page}&per-page={per_page}&terms={terms.value}',
                     headers=self.header
                 )
             except CandFansException as e:
@@ -508,36 +510,6 @@ class CandFansClient(AnonymousCandFansClient):
             raise CandFansException(
                 f'failed follow of [{user_id}] [{e}]'
             )
-
-    def get_popular_creators(
-        self,
-        between: BetweenType,
-        start_page: int = 1,
-        max_page: int = 10,
-    ) -> List[Creator]:
-        """
-        https://candfans.jp/api/contents/get-popular-creator?between=DAY&page=1
-        :return:
-        """
-        page = start_page
-        while True:
-            try:
-                res_json = self._get(
-                    f'api/contents/get-popular-creator?between={between.value}&page={page}',
-                    headers=self.header
-                )
-            except CandFansException as e:
-                raise CandFansException(
-                    f'failed get popular of {between} page {page} [{e}]'
-                )
-            if len(res_json['data']) == 0:
-                break
-            for f in res_json['data']:
-                yield Creator(**f)
-            page += 1
-            if page > max_page:
-                break
-            time.sleep(0.5)
 
     def _get_csrf_cookies(self):
         url = f'{self._base_url}/api/sanctum/csrf-cookie'
