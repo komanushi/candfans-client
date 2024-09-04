@@ -65,7 +65,6 @@ class DetailUser(BaseModel):
     fans_cnt: Optional[int]
     is_ban: bool
     delete_at: Optional[datetime]
-    is_mute_senssitive: bool
     is_accept_comment: bool
     is_official_creator: bool
     can_change_backnumber_price: bool
@@ -92,7 +91,6 @@ class Plan(BaseModel):
     support_price: int
     total_support_price: int
     plan_detail: str
-    r18: int
     status: int
     fans_cnt: Optional[int]
     is_fans: bool

@@ -71,7 +71,6 @@ class Post(BaseModel):
     is_like: bool
     can_browsing: bool
     can_send_chip: bool
-    r18: int
     apply_status: int
     is_progressed: bool
     is_accept_comment: bool

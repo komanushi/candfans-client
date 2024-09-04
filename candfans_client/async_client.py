@@ -124,19 +124,6 @@ class AsyncAnonymousCandFansClient:
                 f'failed get_users [{e}]'
             )
 
-    async def get_timeline_month(self, user_id: int) -> List[TimelineMonth]:
-        try:
-            res_json = await self._get(
-                f'api/contents/get-timeline-month?user_id={user_id}',
-                headers=self.header
-            )
-
-            return [TimelineMonth(**r) for r in res_json['data']]
-        except CandFansException as e:
-            raise CandFansException(
-                f'failed get_timeline_month [{e}]'
-            )
-
     async def get_timeline(
             self,
             user_id: int,

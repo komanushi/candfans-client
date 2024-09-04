@@ -129,17 +129,6 @@ class TestAsyncAnonymousCandFansClient(IsolatedAsyncioTestCase):
         self.assertEqual(len(user_info.plans), 2)
         self.assertEqual(user_info.user.user_code, 'dummy_user')
 
-    async def test_get_timeline_month(self, *args):
-        client = AsyncCandFansClient(
-            email='test@test.com',
-            password='password'
-        )
-        await client.login()
-        timeline_months = await client.get_timeline_month(9999)
-        self.assertEqual(len(timeline_months), 9)
-        self.assertEqual(timeline_months[-1].column_name, '2023年06月')
-        self.assertEqual(timeline_months[0].column_name, '2024年02月')
-
     async def test_get_timeline_with_public(self, *args):
         client = AsyncCandFansClient(
             email='test@test.com',

@@ -118,17 +118,6 @@ class TestClient(TestCase):
         self.assertEqual(len(user_info.plans), 2)
         self.assertEqual(user_info.user.user_code, 'dummy_user')
 
-    def test_get_timeline_month(self, *args):
-
-        client = CandFansClient(
-            email='test@test.com',
-            password='password'
-        )
-        timeline_months = client.get_timeline_month(9999)
-        self.assertEqual(len(timeline_months), 9)
-        self.assertEqual(timeline_months[-1].column_name, '2023年06月')
-        self.assertEqual(timeline_months[0].column_name, '2024年02月')
-
     def test_get_timeline_with_public(self, *args):
 
         client = CandFansClient(
