@@ -27,17 +27,17 @@ from candfans_client.models.user import (
 from candfans_client.models.timeline import (
     Post,
     PostType,
-    TimelineMonth,
 )
 
 from candfans_client.exceptions import CandFansException
 
 
 class AnonymousCandFansClient:
-    def __init__(self, base_url: str = 'https://candfans.jp', debug: bool = False):
+    def __init__(self, base_url: str = 'https://candfans.jp', ratelimit_reset_sec=70, debug: bool = False):
 
         self._base_url = base_url
         self._session = httpx.Client(timeout=httpx.Timeout(5.0, read=20.0))
+        self.ratelimit_reset_sec = ratelimit_reset_sec
         self.debug = debug
         if self.debug:
             import logging
@@ -182,7 +182,6 @@ class AnonymousCandFansClient:
         :return:
         """
         page = start_page
-        print(terms)
         while True:
             try:
                 res_json = self._v3_request(
@@ -224,9 +223,16 @@ class AnonymousCandFansClient:
     def _request(self, method: str, path: str, *arg, **kwargs):
         url = f'{self.base_url}/{path}'
         response = self._session.request(method, url, *arg, **kwargs)
+        ratelimit_remaining = response.headers.get("x-ratelimit-remaining")
+
+        if ratelimit_remaining is not None and int(ratelimit_remaining) <= 10:
+            print(f'reach ratelimit {ratelimit_remaining}. waiting {self.ratelimit_reset_sec}s')
+            time.sleep(self.ratelimit_reset_sec)
+
         response_json = response.json()
 
         if self.debug:
+            print(f'[{ratelimit_remaining=}]')
             os.makedirs('./debug', exist_ok=True)
             with open(f'debug/{method}_{quote_plus(url)}.json', mode='w') as f:
                 f.write(json.dumps(response_json, indent=4, ensure_ascii=False))
@@ -246,9 +252,16 @@ class AnonymousCandFansClient:
     def _v3_request(self, method: str, path: str, *arg, **kwargs):
         url = f'{self.base_url}/{path}'
         response = self._session.request(method, url, *arg, **kwargs)
+        ratelimit_remaining = response.headers.get("x-ratelimit-remaining")
+
+        if ratelimit_remaining is not None and int(ratelimit_remaining) <= 10:
+            print(f'reach ratelimit {ratelimit_remaining}. waiting {self.ratelimit_reset_sec}s')
+            time.sleep(self.ratelimit_reset_sec)
+
         response_json = response.json()
 
         if self.debug:
+            print(f'[{ratelimit_remaining=}]')
             os.makedirs('./debug', exist_ok=True)
             with open(f'debug/{method}_{quote_plus(url)}.json', mode='w') as f:
                 f.write(json.dumps(response_json, indent=4, ensure_ascii=False))
@@ -257,8 +270,15 @@ class AnonymousCandFansClient:
 
 
 class CandFansClient(AnonymousCandFansClient):
-    def __init__(self, email: str, password: str, base_url: str = 'https://candfans.jp', debug: bool = False) -> None:
-        super().__init__(base_url, debug)
+    def __init__(
+        self,
+        email: str,
+        password: str,
+        base_url: str = 'https://candfans.jp',
+        ratelimit_reset_sec: int = 70,
+        debug: bool = False,
+    ) -> None:
+        super().__init__(base_url, ratelimit_reset_sec, debug)
         self._email = email
         self._password = password
         self._xsrf_token = None

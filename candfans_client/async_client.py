@@ -26,10 +26,16 @@ from candfans_client.exceptions import CandFansException
 
 class AsyncAnonymousCandFansClient:
 
-    def __init__(self, base_url: str = 'https://candfans.jp', debug: bool = False):
+    def __init__(
+        self,
+        base_url: str = 'https://candfans.jp',
+        ratelimit_reset_sec: int = 70,
+        debug: bool = False,
+    ):
 
         self._base_url = base_url
         self._session = httpx.AsyncClient(timeout=httpx.Timeout(5.0, read=20.0))
+        self.ratelimit_reset_sec = ratelimit_reset_sec
         self.debug = debug
         if self.debug:
             import logging
@@ -220,9 +226,16 @@ class AsyncAnonymousCandFansClient:
     async def _request(self, method: str, path: str, *arg, **kwargs):
         url = f'{self.base_url}/{path}'
         response = await self._session.request(method, url, *arg, **kwargs)
+        ratelimit_remaining = response.headers.get("x-ratelimit-remaining")
+
+        if ratelimit_remaining is not None and int(ratelimit_remaining) <= 10:
+            print(f'reach ratelimit {ratelimit_remaining}. waiting {self.ratelimit_reset_sec}s')
+            await asyncio.sleep(self.ratelimit_reset_sec)
+
         response_json = response.json()
 
         if self.debug:
+            print(f'[{ratelimit_remaining=}]')
             os.makedirs('./debug', exist_ok=True)
             with open(f'debug/{method}_{quote_plus(url)}.json', mode='w') as f:
                 f.write(json.dumps(response_json, indent=4, ensure_ascii=False))
@@ -243,8 +256,14 @@ class AsyncAnonymousCandFansClient:
         url = f'{self.base_url}/{path}'
         response = await self._session.request(method, url, *arg, **kwargs)
         response_json = response.json()
+        ratelimit_remaining = response.headers.get("x-ratelimit-remaining")
+
+        if ratelimit_remaining is not None and int(ratelimit_remaining) <= 10:
+            print(f'reach ratelimit {ratelimit_remaining}. waiting {self.ratelimit_reset_sec}s')
+            await asyncio.sleep(self.ratelimit_reset_sec)
 
         if self.debug:
+            print(f'[{ratelimit_remaining=}]')
             os.makedirs('./debug', exist_ok=True)
             with open(f'debug/{method}_{quote_plus(url)}.json', mode='w') as f:
                 f.write(json.dumps(response_json, indent=4, ensure_ascii=False))
@@ -254,8 +273,15 @@ class AsyncAnonymousCandFansClient:
 
 class AsyncCandFansClient(AsyncAnonymousCandFansClient):
 
-    def __init__(self, email: str, password: str, base_url: str = 'https://candfans.jp', debug: bool = False) -> None:
-        super().__init__(base_url, debug)
+    def __init__(
+        self,
+        email: str,
+        password: str,
+        base_url: str = 'https://candfans.jp',
+        ratelimit_reset_sec: int = 70,
+        debug: bool = False
+    ) -> None:
+        super().__init__(base_url, ratelimit_reset_sec, debug)
         self._email = email
         self._password = password
         self._xsrf_token = None

@@ -9,7 +9,7 @@ def main():
     client = CandFansClient(
         email=os.getenv('CANDFANS_EMAIL'),
         password=os.getenv('CANDFANS_PASSWORD'),
-        debug=False
+        debug=True
     )
     # client = AnonymousCandFansClient(debug=False)
     # res = client.get_followed(1025744)
