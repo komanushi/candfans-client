@@ -31,3 +31,14 @@ class RankingCreator(BaseModel):
     profile_cover_path: Optional[str]
     profile_icon_path: Optional[str]
     profile_text: Optional[str]
+
+
+class NewCommer(BaseModel):
+    user_id: int
+    user_code: str
+    username: str
+    is_following: bool
+    is_official: bool
+    profile_icon_path: Optional[str]
+    profile_cover_path: Optional[str]
+    profile_text: Optional[str]

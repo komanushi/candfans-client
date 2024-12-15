@@ -11,7 +11,7 @@ import httpx
 
 from candfans_client.models.sales import SalesHistory, Sales, SalesPurchasePost, SalesSubscribe, SalesChip, \
     SalesBacknumber
-from candfans_client.models.search import RankingCreator, CreatorTerm
+from candfans_client.models.search import RankingCreator, CreatorTerm, NewCommer
 from candfans_client.models.user import (
     User,
     UserInfo, MineUserInfo, FollowStatus,
@@ -209,6 +209,47 @@ class AsyncAnonymousCandFansClient:
                     profile_icon_path=user['profile_icon_path'],
                     profile_text=user['profile_text'],
                 )
+            page += 1
+            if page > max_page:
+                break
+            await asyncio.sleep(0.5)
+
+    async def get_trend_new_commers(
+            self,
+            start_page: int = 1,
+            max_page: int = 10,
+            per_page: int = 10
+    ) -> AsyncGenerator[NewCommer, None]:
+        """
+        https://candfans.jp/api/v3/creators/trend-newcomers?page=1&per-page=10
+        :return:
+        """
+        page = start_page
+        while True:
+            try:
+                res_json = self._v3_request(
+                    'GET',
+                    f'api/v3/creators/trend-newcomers?page={page}&per-page={per_page}',
+                    headers=self.header
+                )
+            except CandFansException as e:
+                raise CandFansException(
+                    f'failed get ranking page {page} per-page {per_page} [{e}]'
+                )
+            if len(res_json['creators']) == 0:
+                break
+            for f in res_json['creators']:
+                yield NewCommer(
+                    user_id=f['id'],
+                    user_code=f['code'],
+                    username=f['name'],
+                    is_following=f['is_following'],
+                    is_official=f['is_official'],
+                    profile_cover_path=f['profile_cover_path'],
+                    profile_icon_path=f['profile_icon_path'],
+                    profile_text=f['profile_text'],
+                )
+
             page += 1
             if page > max_page:
                 break
