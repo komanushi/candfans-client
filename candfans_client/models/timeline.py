@@ -1,6 +1,6 @@
 import datetime
 from enum import IntEnum
-from typing import Optional, List
+from typing import Optional, List, Union
 
 from pydantic import BaseModel
 
@@ -39,6 +39,11 @@ class ShortPlan(BaseModel):
     can_buy_backnumber_not_entry_plan: bool
     add_backnumber_date: Optional[str]
     is_joined_plan: bool
+
+
+class Attachment(BaseModel):
+    default: str
+    low: Optional[str]
 
 
 class Post(BaseModel):
@@ -84,3 +89,5 @@ class Post(BaseModel):
     thumbnail_file: Optional[str]
     share_count: int
     plans: List[ShortPlan]
+    attachments: list[Attachment]
+    attachment_length: Union[int, float]

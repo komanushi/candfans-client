@@ -14,10 +14,11 @@ def main():
     client = AnonymousCandFansClient(debug=False)
     # res = client.get_followed(1025744)
     # print(len(list(res)))
-    # res = client.get_users('hamayoko333')
+    res = client.get_users('koma_showcase')
     # print(res)
-    # res = client.get_timeline(res.user.id, post_types=[PostType.PUBLIC_ITEM])
-    # print(list(res)[0])
+    res = client.get_timeline(res.user.id, post_types=[PostType.LIMITED_ACCESS_ITEM], max_page=1)
+    post = list(res)[0]
+    print(post.attachment_length, post.title)
     # histories = client.get_sales_history('2023-11')
     # print(len(histories))
     # print(histories[0])
@@ -39,8 +40,8 @@ def main():
     # print(res.model_dump_json(indent=4))
     # res = client.get_creator_ranking(start_page=1, max_page=1, per_page=10, terms=CreatorTerm.TOTALY)
     # for x in res: print(x.rank, x.username)
-    res = client.get_trend_new_commers()
-    for x in res: print(x.user_id, x.username)
+    # res = client.get_trend_new_commers()
+    # for x in res: print(x.user_id, x.username)
 
 
 async def async_main():
